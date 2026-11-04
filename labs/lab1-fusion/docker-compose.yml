@@ -1,0 +1,6 @@
+services:
+  lab:
+    build: .
+    volumes:
+      - ./data:/app/data
+      - ./results:/app/results
