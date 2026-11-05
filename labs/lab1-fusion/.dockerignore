@@ -1,5 +1,12 @@
 .git
 .venv
 __pycache__
+*.pyc
 data
+cache
 results
+report
+legacy
+.mypy_cache
+.pytest_cache
+.uv

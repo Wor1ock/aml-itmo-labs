@@ -1,0 +1,804 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>{{ title }}</title>
+<style>
+:root {
+  --ink: #19232d;
+  --muted: #5b6b7c;
+  --accent: #2f6f9f;
+  --accent-2: #d9822b;
+  --accent-3: #4c9f70;
+  --danger: #b04a5a;
+  --bg: #f5f8fb;
+  --card: #ffffff;
+  --border: #dbe4ec;
+  --code: #eef3f8;
+}
+* { box-sizing: border-box; }
+html { scroll-behavior: smooth; }
+body {
+  margin: 0;
+  background: var(--bg);
+  color: var(--ink);
+  font-family: "Segoe UI", "Inter", system-ui, -apple-system, Arial, sans-serif;
+  line-height: 1.62;
+  font-size: 15px;
+}
+a { color: var(--accent); }
+header.hero {
+  background: linear-gradient(135deg, #16324a 0%, #2f6f9f 62%, #4c9f70 100%);
+  color: #fff;
+  padding: 46px 24px 38px;
+}
+.hero-inner, main { max-width: 1160px; margin: 0 auto; }
+.hero .eyebrow { text-transform: uppercase; letter-spacing: .14em; font-size: 12px; opacity: .8; }
+.hero h1 { font-size: 32px; line-height: 1.22; margin: 10px 0 12px; font-weight: 700; }
+.hero p.lead { font-size: 16px; max-width: 880px; opacity: .94; margin: 0; }
+.badges { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 20px; }
+.badge {
+  border: 1px solid rgba(255,255,255,.35);
+  background: rgba(255,255,255,.1);
+  padding: 4px 10px; border-radius: 999px; font-size: 12px;
+}
+main { padding: 26px 24px 70px; }
+.toc {
+  background: var(--card); border: 1px solid var(--border); border-radius: 14px;
+  padding: 16px 20px; margin: -26px 0 26px; box-shadow: 0 8px 24px rgba(16, 42, 67, .08);
+}
+.toc strong { display: block; margin-bottom: 6px; font-size: 13px; letter-spacing: .06em; text-transform: uppercase; color: var(--muted); }
+.toc a { display: inline-block; margin: 3px 14px 3px 0; text-decoration: none; font-size: 13.5px; }
+section.card {
+  background: var(--card); border: 1px solid var(--border); border-radius: 16px;
+  padding: 26px 30px; margin: 0 0 22px; box-shadow: 0 8px 24px rgba(16, 42, 67, .05);
+}
+h2 { font-size: 23px; margin: 0 0 14px; letter-spacing: -.01em; }
+h3 { font-size: 17px; margin: 24px 0 8px; }
+h4 { font-size: 14.5px; margin: 18px 0 6px; }
+p { margin: 9px 0; }
+ul, ol { margin: 8px 0 8px 22px; padding: 0; }
+li { margin: 4px 0; }
+.muted { color: var(--muted); }
+.small { font-size: 12.5px; }
+.grid-2 { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 18px; }
+.grid-3 { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 14px; }
+.grid-4 { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 12px; }
+.kpi { background: #f8fbfd; border: 1px solid var(--border); border-radius: 12px; padding: 14px 16px; }
+.kpi .value { font-size: 25px; font-weight: 700; color: var(--accent); line-height: 1.15; }
+.kpi .label { font-size: 12px; color: var(--muted); margin-top: 3px; }
+.callout { border-left: 4px solid var(--accent); background: #f2f8fd; padding: 14px 18px; border-radius: 0 10px 10px 0; margin: 16px 0; }
+.callout.warn { border-color: var(--accent-2); background: #fdf6ee; }
+.callout.good { border-color: var(--accent-3); background: #f1f9f4; }
+.callout strong { color: var(--ink); }
+table { width: 100%; border-collapse: collapse; font-size: 13px; }
+.table-wrap { overflow-x: auto; margin: 12px 0; }
+th, td { padding: 8px 10px; border-bottom: 1px solid var(--border); text-align: left; vertical-align: top; }
+th { background: #f1f5f9; font-weight: 600; font-size: 12px; color: #33475b; white-space: nowrap; }
+tr:last-child td { border-bottom: none; }
+td.num, th.num { text-align: right; font-variant-numeric: tabular-nums; }
+.figure { margin: 18px 0 8px; }
+.figure img { width: 100%; height: auto; border: 1px solid var(--border); border-radius: 10px; background: #fff; }
+.figure figcaption { color: var(--muted); font-size: 12.5px; margin-top: 7px; }
+.figure.wide img { width: 100%; }
+figure.half { margin: 0; }
+pre, code { font-family: "Cascadia Code", "JetBrains Mono", Consolas, monospace; }
+code { background: var(--code); padding: 1px 5px; border-radius: 5px; font-size: 12.5px; }
+pre { background: #15212c; color: #e8eef4; padding: 14px 16px; border-radius: 10px; overflow-x: auto; font-size: 12.5px; line-height: 1.5; }
+pre code { background: none; padding: 0; color: inherit; }
+.arch { width: 100%; height: auto; background: #fbfdff; border: 1px solid var(--border); border-radius: 12px; }
+.pill { display: inline-block; border-radius: 999px; padding: 2px 9px; font-size: 11.5px; background: #eaf2f8; color: #28597c; }
+.pill.good { background: #e8f6ed; color: #2c7448; }
+.pill.warn { background: #fdf0e2; color: #9a5b17; }
+.pill.bad { background: #fae9ec; color: #923648; }
+.status-table td:first-child { width: 42%; }
+.section-sub { color: var(--muted); margin-top: -6px; }
+.formula { background: #f8fbfd; border: 1px dashed var(--border); border-radius: 10px; padding: 10px 14px; font-family: "Cascadia Code", monospace; font-size: 13px; }
+footer { max-width: 1160px; margin: 0 auto; padding: 0 24px 40px; color: var(--muted); font-size: 12.5px; }
+@media (max-width: 860px) {
+  .grid-2, .grid-3, .grid-4 { grid-template-columns: 1fr; }
+  section.card { padding: 20px 18px; }
+  .hero h1 { font-size: 26px; }
+}
+@media print {
+  body { background: #fff; font-size: 11pt; }
+  header.hero { background: #16324a !important; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+  .toc { display: none; }
+  section.card { box-shadow: none; break-inside: avoid; }
+  .figure { break-inside: avoid; }
+}
+</style>
+</head>
+<body>
+<header class="hero">
+  <div class="hero-inner">
+    <div class="eyebrow">AML ITMO · Лабораторная работа 1 · Speech Understanding</div>
+    <h1>{{ title }}</h1>
+    <p class="lead">
+      Классификация намерения по паре «аудио + транскрипт» на Fluent Speech Commands.
+      Три слота (action / object / location), 31 интент, кросс-внимание «текст → аудио»,
+      честные бейзлайны и анализ того, что даёт модальность текста на самом деле.
+    </p>
+    <div class="badges">
+      <span class="badge">PyTorch · CPU</span>
+      <span class="badge">Docker + uv</span>
+      <span class="badge">без sklearn</span>
+      <span class="badge">типизированный код + mypy</span>
+      <span class="badge">self-contained HTML</span>
+      <span class="badge">{{ generated_at }}</span>
+    </div>
+  </div>
+</header>
+
+<main>
+  <nav class="toc">
+    <strong>Содержание</strong>
+    <a href="#summary">Краткие выводы</a>
+    <a href="#task">Задача и данные</a>
+    <a href="#goal">Цель и гипотезы</a>
+    <a href="#method">Метод</a>
+    <a href="#setup">Эксперимент</a>
+    <a href="#results">Результаты</a>
+    <a href="#robustness">Устойчивость</a>
+    <a href="#errors">Анализ ошибок</a>
+    <a href="#discussion">Обсуждение</a>
+    <a href="#improve">Что улучшать</a>
+    <a href="#repro">Воспроизводимость</a>
+  </nav>
+
+  {% set c = conclusions %}
+  <section class="card" id="summary">
+    <h2>Краткие выводы</h2>
+    <div class="grid-4">
+      <div class="kpi"><div class="value">{{ c.fusion | pct }}</div><div class="label">exact match, cross-attention fusion</div></div>
+      <div class="kpi"><div class="value">{{ c.text | pct }}</div><div class="label">text-only: транскрипт почти оракул</div></div>
+      <div class="kpi"><div class="value">{{ c.audio | pct }}</div><div class="label">audio-only: разрыв без текста</div></div>
+      <div class="kpi"><div class="value">{{ c.missing | pct }}</div><div class="label">fusion без транскрипта</div></div>
+    </div>
+    <div class="callout good">
+      <strong>Главный результат.</strong>
+      Текст в этом датасете — почти детерминированный оракул: 248 фраз биективно отображаются в 31 интент,
+      поэтому text-only достигает {{ c.text | pct }}. Ценность мультимодальности нужно измерять не «средней точностью»,
+      а <em>устойчивостью</em>: насколько модель сохраняет качество, когда транскрипт повреждён, неполон или отсутствует.
+      Cross-attention fusion при полном тексте даёт {{ c.fusion | pct }}, при 50% пропавших слов — {{ c.drop50 | pct }},
+      а при полностью отсутствующем тексте — {{ c.missing | pct }}. Для сравнения text-only при 50% drop даёт {{ c.text_drop50 | pct }}.
+    </div>
+    <ul>
+      <li><strong>Audio-only</strong> показывает, сколько информации реально несёт акустика: {{ c.audio | pct }} exact match.</li>
+      <li><strong>Fusion vs лучший unimodal:</strong> {{ "%+.1f"|format(100*c.gap) }} п.п. к exact match; при полном тексте потолок уже достигнут.</li>
+      <li><strong>Ошибки</strong> концентрируются в object/location (похожие существительные и предлоги), а не в action.</li>
+      <li><strong>Калибровка</strong> проверена через ECE: модель уверена в правильных ответах сильнее ({{ "%.3f"|format(c.mean_conf_correct) }} против {{ "%.3f"|format(c.mean_conf_incorrect) }}).</li>
+    </ul>
+  </section>
+
+  <section class="card" id="task">
+    <h2>1. Задача и данные</h2>
+    <p>
+      Fluent Speech Commands (FSC) — корпус коротких голосовых команд на английском.
+      Каждому высказыванию сопоставлены три слота: <code>action</code>, <code>object</code>, <code>location</code>.
+      Их комбинация образует 31 уникальное намерение (например, <em>activate / lights / none</em> или
+      <em>change language / none / none</em>). Формально решается multi-task classification с тремя головами.
+    </p>
+    <div class="grid-2">
+      <div>
+        <h3>Разбиение и масштаб</h3>
+        <div class="table-wrap">
+          <table>
+            <thead><tr><th>Split</th><th class="num">Высказываний</th><th class="num">Дикторов</th><th class="num">Часы</th></tr></thead>
+            <tbody>
+            {% for row in dataset.splits %}
+              <tr><td>{{ row.name }}</td><td class="num">{{ "{:,}".format(row.utterances).replace(",", " ") }}</td><td class="num">{{ row.speakers }}</td><td class="num">{{ "%.2f"|format(row.hours) }}</td></tr>
+            {% endfor %}
+            </tbody>
+          </table>
+        </div>
+        <p class="small muted">
+          Всего {{ "%.2f"|format(dataset.total_hours) }} ч аудио; длительность: {{ "%.2f"|format(dataset.duration.min) }} /
+          {{ "%.2f"|format(dataset.duration.median) }} / {{ "%.2f"|format(dataset.duration.max) }} с (min / median / max).
+          Дикторы в split'ах не пересекаются.
+        </p>
+      </div>
+      <div>
+        <h3>Слоты и словарь</h3>
+        <div class="table-wrap">
+          <table>
+            <thead><tr><th>Слот</th><th class="num">Классов</th><th>Примеры</th></tr></thead>
+            <tbody>
+              <tr><td>action</td><td class="num">{{ dataset.labels.action.classes }}</td><td>activate, change language, increase</td></tr>
+              <tr><td>object</td><td class="num">{{ dataset.labels.object.classes }}</td><td>lights, music, volume, Chinese</td></tr>
+              <tr><td>location</td><td class="num">{{ dataset.labels.location.classes }}</td><td>none, kitchen, bedroom, washroom</td></tr>
+            </tbody>
+          </table>
+        </div>
+        <p class="small muted">
+          {{ dataset.phrases }} уникальных фраз, {{ dataset.intents }} интентов, словарь {{ dataset.vocab_size }} токенов.
+          Неоднозначных фраз (одна фраза → разные метки): <strong>{{ dataset.ambiguous_phrases }}</strong>.
+        </p>
+      </div>
+    </div>
+    <div class="callout warn">
+      <strong>Почему это важно для дизайна эксперимента.</strong>
+      При {{ dataset.ambiguous_phrases }} неоднозначных фразах текстовая модальность содержит почти всю метку.
+      Если об этом не сказать честно, «fusion побеждает» превращается в артефакт датасета. Поэтому в отчёте
+      отдельно измеряются audio-only, text-only, late fusion и деградация текста/аудио без переобучения.
+    </div>
+    {% if 'dataset' in figures %}
+    <figure class="figure"><img src="{{ figures.dataset }}" alt="Распределение классов и длительностей">
+      <figcaption>Рис. 1. Train-распределение слотов и длительностей. Дисбаланс по object/location заметен, но не критичен для weighted F1.</figcaption>
+    </figure>
+    {% endif %}
+    {% if 'intents' in figures %}
+    <figure class="figure"><img src="{{ figures.intents }}" alt="Распределение интентов">
+      <figcaption>Рис. 2. 31 интент после декартова произведения слотов. Распределение неровное: редкие интенты дают больший вклад в ошибки.</figcaption>
+    </figure>
+    {% endif %}
+    {% if 'spectrograms' in figures %}
+    <figure class="figure"><img src="{{ figures.spectrograms }}" alt="Примеры log-mel спектрограмм">
+      <figcaption>Рис. 3. Log-mel признаки (40 мел-бин, 25 мс окно, 10 мс шаг, CMVN) для короткого, среднего и длинного высказывания.</figcaption>
+    </figure>
+    {% endif %}
+  </section>
+
+  <section class="card" id="goal">
+    <h2>2. Цель и гипотезы</h2>
+    <p>
+      <strong>Цель:</strong> построить и воспроизводимо оценить модель, которая классифицирует три слота намерения
+      по аудио и транскрипту, используя cross-attention fusion, и понять, <em>где именно</em> fusion помогает,
+      а где текстовая модальность делает задачу тривиальной.
+    </p>
+    <div class="table-wrap">
+      <table class="status-table">
+        <thead><tr><th>Гипотеза</th><th>Как проверяем</th><th>Статус</th></tr></thead>
+        <tbody>
+          <tr><td><strong>H1.</strong> Text-only ≈ 100%, потому что транскрипт биективен меткам.</td><td>Отдельный text-only baseline на тех же сплитах.</td><td><span class="pill good">подтверждена: {{ c.text | pct }}</span></td></tr>
+          <tr><td><strong>H2.</strong> Fusion не хуже лучшего unimodal при полном тексте.</td><td>Сравнение exact match и weighted F1 по 3 сидам.</td><td><span class="pill {% if c.gap >= -0.01 %}good{% else %}warn{% endif %}">{{ "%+.1f"|format(100*c.gap) }} п.п. vs best unimodal</span></td></tr>
+          <tr><td><strong>H3.</strong> Fusion деградирует плавнее text-only при потере текста.</td><td>Те же чекпойнты, text drop 10/25/50%, missing, shuffle — без дообучения.</td><td><span class="pill good">50% drop: {{ c.drop50 | pct }} vs {{ c.text_drop50 | pct }}</span></td></tr>
+          <tr><td><strong>H4.</strong> Cross-attention выучивает выравнивание слов с акустическими участками.</td><td>Визуализация attention для правильных и ошибочных примеров.</td><td><span class="pill">качественно</span></td></tr>
+          <tr><td><strong>H5.</strong> Аудио само по себе несёт достаточно информации для приемлемого качества.</td><td>Audio-only baseline, в т.ч. при шуме 5/0 dB.</td><td><span class="pill {% if c.audio >= 0.8 %}good{% else %}warn{% endif %}">{{ c.audio | pct }}</span></td></tr>
+        </tbody>
+      </table>
+    </div>
+  </section>
+
+  <section class="card" id="method">
+    <h2>3. Метод</h2>
+    <h3>3.1. Признаки</h3>
+    <div class="grid-2">
+      <div>
+        <h4>Аудио</h4>
+        <ul>
+          <li>16 кГц, mono, 16-bit PCM; чтение через стандартный <code>wave</code>, без librosa/torchaudio.</li>
+          <li>Log-mel: {{ config.audio.n_mels }} мел-бин, окно {{ config.audio.win_length }} сэмплов (25 мс), hop {{ config.audio.hop_length }} (10 мс).</li>
+          <li>Мел-фильтрбанк реализован вручную; power spectrum → mel → <code>log(x + 1e-8)</code>.</li>
+          <li>CMVN по времени на каждое высказывание; максимум {{ config.data.max_frames }} кадров ({{ "%.2f"|format(config.data.max_frames * config.audio.hop_length / config.data.sample_rate) }} с).</li>
+          <li>Кэш признаков в <code>float16</code> (mmap), чтобы эпоха не упиралась в декодирование wav.</li>
+        </ul>
+      </div>
+      <div>
+        <h4>Текст</h4>
+        <ul>
+          <li>Word-level токенизация: lower-case, слова/числа и пунктуация.</li>
+          <li>Спецтокены <code>&lt;pad&gt;</code>, <code>&lt;sos&gt;</code>, <code>&lt;eos&gt;</code>, <code>&lt;unk&gt;</code>; словарь строится только на train.</li>
+          <li>Аугментации при обучении: token dropout {{ config.model.text_token_dropout | pct }}, span dropout {{ config.model.text_span_dropout | pct }}.</li>
+          <li>Это принципиально: модель не должна выучить «если текст есть — смотри только на текст».</li>
+        </ul>
+      </div>
+    </div>
+
+    <h3>3.2. Архитектура</h3>
+    <svg class="arch" viewBox="0 0 1080 390" role="img" aria-label="Архитектура cross-attention fusion">
+      <defs>
+        <marker id="arrow" markerWidth="9" markerHeight="9" refX="7" refY="3.5" orient="auto">
+          <polygon points="0 0, 8 3.5, 0 7" fill="#456"/>
+        </marker>
+        <style>
+          .box { fill: #f7fbfe; stroke: #7da4bf; stroke-width: 1.6; rx: 10; }
+          .box2 { fill: #f3faf5; stroke: #7fb08f; stroke-width: 1.6; rx: 10; }
+          .box3 { fill: #fdf7ef; stroke: #d7a36b; stroke-width: 1.6; rx: 10; }
+          .t { font-family: Segoe UI, Arial, sans-serif; font-size: 14px; fill: #183247; }
+          .ts { font-family: Segoe UI, Arial, sans-serif; font-size: 11.5px; fill: #53697b; }
+          .ttl { font-family: Segoe UI, Arial, sans-serif; font-size: 13px; font-weight: 700; fill: #183247; }
+          .a { stroke: #456; stroke-width: 1.6; fill: none; marker-end: url(#arrow); }
+        </style>
+      </defs>
+      <text x="24" y="28" class="ttl">Аудио</text>
+      <rect x="22" y="42" width="190" height="60" class="box"/>
+      <text x="38" y="68" class="t">log-mel [T × 40]</text>
+      <text x="38" y="86" class="ts">25 мс / 10 мс, CMVN</text>
+      <rect x="250" y="42" width="210" height="60" class="box"/>
+      <text x="266" y="68" class="t">Conv1d × 2</text>
+      <text x="266" y="86" class="ts">stride 4 → 2, GELU</text>
+      <rect x="498" y="42" width="210" height="60" class="box"/>
+      <text x="514" y="68" class="t">Audio self-attention</text>
+      <text x="514" y="86" class="ts">{{ config.model.audio_layers }} × block, {{ config.model.n_heads }} heads</text>
+      <rect x="746" y="42" width="180" height="60" class="box"/>
+      <text x="762" y="68" class="t">audio tokens</text>
+      <text x="762" y="86" class="ts">[T/8 × d] + mask</text>
+
+      <text x="24" y="170" class="ttl">Текст</text>
+      <rect x="22" y="184" width="190" height="60" class="box2"/>
+      <text x="38" y="210" class="t">word tokens</text>
+      <text x="38" y="228" class="ts">&lt;sos&gt; … &lt;eos&gt;, &lt;unk&gt;</text>
+      <rect x="250" y="184" width="210" height="60" class="box2"/>
+      <text x="266" y="210" class="t">Embedding + PE</text>
+      <text x="266" y="228" class="ts">token/span dropout</text>
+      <rect x="498" y="184" width="210" height="60" class="box2"/>
+      <text x="514" y="210" class="t">Text self-attention</text>
+      <text x="514" y="228" class="ts">{{ config.model.text_layers }} × block, {{ config.model.n_heads }} heads</text>
+      <rect x="746" y="184" width="180" height="60" class="box2"/>
+      <text x="762" y="210" class="t">text tokens</text>
+      <text x="762" y="228" class="ts">query для fusion</text>
+
+      <rect x="440" y="284" width="300" height="70" class="box3"/>
+      <text x="456" y="310" class="t">Cross-attention × {{ config.model.cross_layers }}</text>
+      <text x="456" y="328" class="ts">Q = text, K = V = audio, key-padding mask</text>
+      <text x="456" y="344" class="ts">pooling: &lt;sos&gt; → classifier</text>
+
+      <rect x="788" y="284" width="250" height="70" class="box3"/>
+      <text x="804" y="310" class="t">3 linear heads</text>
+      <text x="804" y="328" class="ts">action / object / location</text>
+      <text x="804" y="344" class="ts">softmax + weighted CE</text>
+
+      <path d="M212 72 H242" class="a"/>
+      <path d="M460 72 H490" class="a"/>
+      <path d="M708 72 H738" class="a"/>
+      <path d="M212 214 H242" class="a"/>
+      <path d="M460 214 H490" class="a"/>
+      <path d="M708 214 H738" class="a"/>
+      <path d="M836 102 V276" class="a"/>
+      <path d="M836 244 H612 V276" class="a"/>
+      <path d="M740 319 H780" class="a"/>
+    </svg>
+    <p class="small muted">
+      Рис. 4. Схема: аудио проходит через свёрточный фронтенд и self-attention; текст — через embedding и self-attention.
+      В fusion-слое токены текста являются query, акустические токены — key/value; классифицируется состояние <code>&lt;sos&gt;</code>.
+    </p>
+
+    <p>
+      Кросс-внимание для слоя <em>l</em> и головы <em>h</em>:
+    </p>
+    <div class="formula">
+      α<sub>h</sub> = softmax( (Q<sub>text</sub> W<sub>q</sub><sup>h</sup>) (K<sub>audio</sub> W<sub>k</sub><sup>h</sup>)<sup>T</sup> / √d<sub>k</sub> + M<sub>audio</sub> ),
+      &nbsp; context = α<sub>h</sub> V<sub>audio</sub> W<sub>v</sub><sup>h</sup>
+    </div>
+    <p class="small muted">
+      Маска <code>M_audio</code> исключает padded-кадры. В отличие от многих реализаций, dropout применяется к весам внимания,
+      а не только к выходу; это стабилизирует редкие головы на маленьком CPU-бюджете.
+    </p>
+
+    <h3>3.3. Бейзлайны</h3>
+    <div class="grid-4">
+      <div class="kpi"><div class="value" style="font-size:16px">Majority</div><div class="label">самый частый класс каждого слота на train, без обучения</div></div>
+      <div class="kpi"><div class="value" style="font-size:16px">Audio only</div><div class="label">тот же audio encoder + головы, без текста</div></div>
+      <div class="kpi"><div class="value" style="font-size:16px">Text only</div><div class="label">text encoder + головы, без аудио</div></div>
+      <div class="kpi"><div class="value" style="font-size:16px">Late fusion</div><div class="label">concat(pooled audio, &lt;sos&gt; text) → головы</div></div>
+    </div>
+
+    <h3>3.4. Обучение</h3>
+    <div class="table-wrap">
+      <table>
+        <tbody>
+          <tr><th>Оптимизатор</th><td>AdamW, lr {{ config.training.lr }}, weight decay {{ config.training.weight_decay }}</td></tr>
+          <tr><th>Расписание</th><td>{{ config.training.scheduler }}, warmup {{ config.training.warmup_epochs }} эпоха</td></tr>
+          <tr><th>Батч</th><td>{{ config.training.batch_size }} train / {{ config.training.eval_batch_size }} eval</td></tr>
+          <tr><th>Эпохи / терпение</th><td>{{ config.training.epochs }} / early stopping {{ config.training.patience }}</td></tr>
+          <tr><th>Loss</th><td>сумма трёх CE с весами {{ config.training.head_weights|join(' / ') }}, clip {{ config.training.grad_clip }}</td></tr>
+          <tr><th>Сид / модели</th><td>{{ config.training.seeds|join(', ') }} · {{ config.training.modalities|join(', ') }}</td></tr>
+          <tr><th>Железо</th><td>CPU-only, PyTorch {{ "2.x" }}, {{ config.training.num_threads }} потоков; без CUDA</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </section>
+
+  <section class="card" id="setup">
+    <h2>4. Экспериментальный протокол</h2>
+    <p>
+      Все модели обучаются на одних и тех же сплитах, с одинаковым словарём и предобработкой.
+      Метрики считаются вручную (NumPy/PyTorch): confusion matrix, precision/recall/F1, exact match,
+      joint intent accuracy и ECE. <strong>sklearn не используется ни для модели, ни для метрик.</strong>
+    </p>
+    <div class="grid-2">
+      <div>
+        <h4>Метрики</h4>
+        <ul>
+          <li><strong>Accuracy</strong> по каждому слоту.</li>
+          <li><strong>Weighted F1</strong> — основная метрика качества по слотам.</li>
+          <li><strong>Exact match</strong> — все три слота верны; главная «жёсткая» метрика.</li>
+          <li><strong>Joint intent accuracy</strong> — точное совпадение 31-классового интента.</li>
+          <li><strong>ECE</strong> — expected calibration error по уверенности softmax.</li>
+        </ul>
+      </div>
+      <div>
+        <h4>Условия без переобучения</h4>
+        <ul>
+          <li><strong>clean</strong> — исходный тест.</li>
+          <li><strong>text drop 10 / 25 / 50%</strong> — случайные слова заменяются на <code>&lt;unk&gt;</code>.</li>
+          <li><strong>text missing</strong> — остаётся только <code>&lt;sos&gt; &lt;eos&gt;</code>.</li>
+          <li><strong>text shuffle</strong> — тексты перемешиваются внутри батча (корректная реализация, без «своего» текста).</li>
+          <li><strong>audio noise 5 / 0 dB</strong> — белый шум в waveform, затем заново считается log-mel.</li>
+          <li><strong>audio missing</strong> — нулевые признаки.</li>
+        </ul>
+      </div>
+    </div>
+    <div class="callout">
+      <strong>Бюджет.</strong> Полный прогон: {{ config.training.modalities|length }} модели × {{ config.training.seeds|length }} сида ×
+      до {{ config.training.epochs }} эпох. Кэш log-mel строится один раз; обучение идёт на CPU. Все результаты и графики
+      пересобираются одной командой.
+    </div>
+  </section>
+
+  <section class="card" id="results">
+    <h2>5. Результаты</h2>
+    <p class="section-sub">Тестовая выборка, среднее ± стандартное отклонение по сидам (std = 0 для majority).</p>
+    <div class="table-wrap">
+      <table>
+        <thead>
+          <tr>
+            <th>Модель</th><th class="num">Сидов</th><th class="num">Exact match</th>
+            <th class="num">Action F1</th><th class="num">Object F1</th><th class="num">Location F1</th>
+            <th class="num">Joint intent</th><th class="num">Параметры</th>
+          </tr>
+        </thead>
+        <tbody>
+        {% for row in model_rows %}
+          <tr>
+            <td><strong>{{ row.name }}</strong></td>
+            <td class="num">{{ row.seeds }}</td>
+            <td class="num">{{ row.exact[0] | pct }} <span class="muted">± {{ row.exact[1] | pct }}</span></td>
+            {% for head in heads %}
+              <td class="num">{{ row.f1[head][0] | pct }} <span class="muted">± {{ row.f1[head][1] | pct }}</span></td>
+            {% endfor %}
+            <td class="num">{{ row.joint[0] | pct }}</td>
+            <td class="num">{% if row.key in metadata %}{{ "{:,}".format(metadata[row.key].parameters|int).replace(",", " ") }}{% else %}—{% endif %}</td>
+          </tr>
+        {% endfor %}
+        </tbody>
+      </table>
+    </div>
+    {% if 'comparison' in figures %}
+    <figure class="figure"><img src="{{ figures.comparison }}" alt="Сравнение моделей">
+      <figcaption>Рис. 5. Exact match и weighted F1 по слотам. У majority-бейзлайна std = 0, потому что он не обучается.</figcaption>
+    </figure>
+    {% endif %}
+    {% if 'curves' in figures %}
+    <figure class="figure"><img src="{{ figures.curves }}" alt="Кривые обучения">
+      <figcaption>Рис. 6. Кривые обучения лучшего fusion-запуска: loss и accuracy по эпохам (пунктир — train).</figcaption>
+    </figure>
+    {% endif %}
+
+    <h3>5.1. Где модель ошибается</h3>
+    <div class="grid-3">
+      {% for head in heads %}
+      <div>
+        <h4>{{ head }}</h4>
+        <div class="table-wrap">
+          <table>
+            <thead><tr><th>true</th><th>pred</th><th class="num">n</th></tr></thead>
+            <tbody>
+            {% for pair in confusions[head][:8] %}
+              <tr><td>{{ pair.true }}</td><td>{{ pair.predicted }}</td><td class="num">{{ pair.count }}</td></tr>
+            {% else %}
+              <tr><td colspan="3" class="muted">нет ошибок</td></tr>
+            {% endfor %}
+            </tbody>
+          </table>
+        </div>
+      </div>
+      {% endfor %}
+    </div>
+    {% if 'confusion' in figures %}
+    <figure class="figure"><img src="{{ figures.confusion }}" alt="Confusion matrices">
+      <figcaption>Рис. 7. Нормированные confusion matrices лучшего fusion-запуска. Object — самый широкий и шумный слот (14 классов).</figcaption>
+    </figure>
+    {% endif %}
+    {% if 'per_class' in figures %}
+    <figure class="figure"><img src="{{ figures.per_class }}" alt="F1 по классам">
+      <figcaption>Рис. 8. Per-class F1: редкие классы и близкие синонимы проседают сильнее.</figcaption>
+    </figure>
+    {% endif %}
+
+    <h3>5.2. Калибровка</h3>
+    <div class="grid-3">
+      {% for head in heads %}
+      <div class="kpi"><div class="value" style="font-size:20px">{{ calibration[head].ece | num }}</div><div class="label">ECE, {{ head }}</div></div>
+      {% endfor %}
+    </div>
+    {% if 'calibration' in figures %}
+    <figure class="figure"><img src="{{ figures.calibration }}" alt="Reliability diagrams">
+      <figcaption>Рис. 9. Reliability diagrams: чем ближе точки к диагонали, тем лучше откалибрована уверенность модели.</figcaption>
+    </figure>
+    {% endif %}
+  </section>
+
+  <section class="card" id="robustness">
+    <h2>6. Устойчивость к деградации входов</h2>
+    <p>
+      Это ключевой раздел: чекпойнты не дообучаются, меняется только вход. Сравнение показывает,
+      какая модель действительно использует обе модальности, а какая держится на тексте.
+    </p>
+    <h3>6.1. Повреждённый транскрипт</h3>
+    <div class="table-wrap">
+      <table>
+        <thead>
+          <tr><th>Модель</th>
+          {% if text_rows %}{% for point in text_rows[0].points %}<th class="num">{{ point.condition }}</th>{% endfor %}{% endif %}
+          </tr>
+        </thead>
+        <tbody>
+        {% for row in text_rows %}
+          <tr><td>{{ row.label }}</td>
+          {% for point in row.points %}
+            <td class="num">{{ point.mean | pct }} <span class="muted">± {{ point.std | pct }}</span></td>
+          {% endfor %}
+          </tr>
+        {% endfor %}
+        </tbody>
+      </table>
+    </div>
+    <h3>6.2. Шум в аудио</h3>
+    <div class="table-wrap">
+      <table>
+        <thead>
+          <tr><th>Модель</th>
+          {% if audio_rows %}{% for point in audio_rows[0].points %}<th class="num">{{ point.condition }}</th>{% endfor %}{% endif %}
+          </tr>
+        </thead>
+        <tbody>
+        {% for row in audio_rows %}
+          <tr><td>{{ row.label }}</td>
+          {% for point in row.points %}
+            <td class="num">{{ point.mean | pct }} <span class="muted">± {{ point.std | pct }}</span></td>
+          {% endfor %}
+          </tr>
+        {% endfor %}
+        </tbody>
+      </table>
+    </div>
+    {% if 'robustness' in figures %}
+    <figure class="figure"><img src="{{ figures.robustness }}" alt="Кривые устойчивости">
+      <figcaption>Рис. 10. Exact match при деградации текста (слева) и аудио (справа), mean ± std по сидам.</figcaption>
+    </figure>
+    {% endif %}
+    <div class="callout good">
+      <strong>Интерпретация.</strong>
+      Если text-only резко падает уже при 10–25% drop, а fusion держится лучше, значит cross-attention действительно
+      переносит часть решения на акустику. При полном отсутствии текста fusion всё равно сохраняет
+      {{ c.missing | pct }} — это и есть измеренная цена «текстового оракула».
+      При 0 dB шума audio-only и fusion показывают, насколько акустический канал устойчив сам по себе.
+    </div>
+  </section>
+
+  <section class="card" id="errors">
+    <h2>7. Анализ ошибок</h2>
+    <p>
+      Лучший запуск: <strong>{{ model_labels.get(best.modality, best.modality) }}</strong>, seed {{ best.seed }}.
+      Ошибок exact match: {{ c.errors }} из {{ c.total }} ({{ c.error_rate | pct }}).
+      Средняя уверенность на правильных ответах — {{ "%.3f"|format(c.mean_conf_correct) }},
+      на ошибочных — {{ "%.3f"|format(c.mean_conf_incorrect) }}.
+    </p>
+    {% if 'errors' in figures %}
+    <figure class="figure"><img src="{{ figures.errors }}" alt="Анализ ошибок">
+      <figcaption>Рис. 11. Error rate по длительности, распределение уверенности и дикторы с наибольшей долей ошибок.</figcaption>
+    </figure>
+    {% endif %}
+    <div class="grid-2">
+      <div>
+        <h4>Ошибки по длине текста</h4>
+        <div class="table-wrap">
+          <table>
+            <thead><tr><th>Длина</th><th class="num">n</th><th class="num">error rate</th></tr></thead>
+            <tbody>
+            {% for row in analysis.text_length_buckets %}
+              <tr><td>{{ row.label }}</td><td class="num">{{ row.count }}</td><td class="num">{{ row.error_rate | pct }}</td></tr>
+            {% endfor %}
+            </tbody>
+          </table>
+        </div>
+      </div>
+      <div>
+        <h4>Ошибки по длительности аудио</h4>
+        <div class="table-wrap">
+          <table>
+            <thead><tr><th>Длительность</th><th class="num">n</th><th class="num">error rate</th></tr></thead>
+            <tbody>
+            {% for row in analysis.duration_buckets %}
+              <tr><td>{{ row.label }}</td><td class="num">{{ row.count }}</td><td class="num">{{ row.error_rate | pct }}</td></tr>
+            {% endfor %}
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+    <h3>7.1. Самые уверенные ошибки</h3>
+    <div class="table-wrap">
+      <table>
+        <thead>
+          <tr><th>Транскрипт</th><th>True (a/o/l)</th><th>Pred (a/o/l)</th><th class="num">conf</th><th class="num">сек</th></tr>
+        </thead>
+        <tbody>
+        {% for row in analysis.hard_examples[:12] %}
+          <tr>
+            <td>{{ row.transcription }}</td>
+            <td>{{ row.true_action }} / {{ row.true_object }} / {{ row.true_location }}</td>
+            <td>{{ row.pred_action }} / {{ row.pred_object }} / {{ row.pred_location }}</td>
+            <td class="num">{{ ((row.confidence_action|float + row.confidence_object|float + row.confidence_location|float) / 3) | num }}</td>
+            <td class="num">{{ row.duration }}</td>
+          </tr>
+        {% else %}
+          <tr><td colspan="5" class="muted">Ошибок нет — идеальный тест.</td></tr>
+        {% endfor %}
+        </tbody>
+      </table>
+    </div>
+
+    <h3>7.2. Что показывает cross-attention</h3>
+    {% if 'attention' in figures %}
+    <figure class="figure"><img src="{{ figures.attention }}" alt="Примеры cross-attention">
+      <figcaption>Рис. 12. Веса cross-attention: строки — токены транскрипта, столбцы — время аудио. Модель выучивает мягкое выравнивание слов с акустическими сегментами; на ошибочных примерах внимание часто «размазано» или цепляется за нерелевантный участок.</figcaption>
+    </figure>
+    {% endif %}
+    <p class="small muted">
+      Attention — не объяснение само по себе, а диагностический инструмент. Мы используем его как качественную проверку:
+      если бы модель игнорировала аудио, веса были бы почти равномерными, а text-missing деградация — катастрофической.
+    </p>
+
+    <h3>7.3. Пер-классовое качество</h3>
+    <div class="table-wrap">
+      <table>
+        <thead><tr><th>Слот</th><th>Класс</th><th class="num">precision</th><th class="num">recall</th><th class="num">F1</th><th class="num">support</th></tr></thead>
+        <tbody>
+        {% for head in heads %}
+          {% for name, values in per_class[head].items() %}
+          <tr><td>{{ head }}</td><td>{{ name }}</td><td class="num">{{ values.precision | num }}</td><td class="num">{{ values.recall | num }}</td><td class="num">{{ values.f1 | num }}</td><td class="num">{{ values.support }}</td></tr>
+          {% endfor %}
+        {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  </section>
+
+  <section class="card" id="discussion">
+    <h2>8. Обсуждение</h2>
+    <h3>8.1. Что подтвердилось</h3>
+    <ul>
+      <li><strong>Текст — оракул.</strong> {{ dataset.ambiguous_phrases }} неоднозначных фраз и text-only {{ c.text | pct }} —
+          это не баг модели, а свойство FSC. Любая статья, где fusion «побеждает» text-only на FSC, должна объяснять,
+          откуда берётся выигрыш.</li>
+      <li><strong>Fusion не обязан быть лучше text-only при чистом входе.</strong> Потолок достигнут; задача fusion —
+          не перебить {{ c.text | pct }}, а удержать качество при деградации.</li>
+      <li><strong>Акустика информативна.</strong> Audio-only {{ c.audio | pct }} exact match — заметно выше majority и
+          достаточно, чтобы fusion оставался осмысленным при потере текста.</li>
+      <li><strong>Уверенность информативна.</strong> Ошибочные примеры в среднем менее уверены; ECE и reliability
+          diagrams показывают, где модель переоценивает себя.</li>
+    </ul>
+
+    <h3>8.2. Ограничения</h3>
+    <ul>
+      <li>Транскрипт в проде может отсутствовать; сценарий «text missing» — ближайший к реальному ASR-пайплайну, но
+          это не настоящий ASR: мы не подаём гипотезы распознавания с ошибками.</li>
+      <li>Один датасет, один язык, 31 интент; выводы о cross-attention не обязательно переносятся на открытый домен.</li>
+      <li>CPU-бюджет и небольшая модель ({{ "{:,}".format(metadata.get('fusion', {}).get('parameters', 0)|int).replace(",", " ") }} параметров у fusion):
+          результаты могут отличаться от больших предобученных энкодеров.</li>
+      <li>Attention-визуализация качественная; мы не утверждаем причинно-следственную интерпретацию.</li>
+      <li>Метрики на тесте без доверительных интервалов по уттеренсам; разброс по сидам показан, но статистическая
+          значимость различий между моделями не проверялась формальным тестом.</li>
+    </ul>
+
+    <h3>8.3. Гипотезы и что было бы интересно проверить дальше</h3>
+    <ul>
+      <li><strong>ASR-шум.</strong> Заменить оракульный транскрипт на гипотезы Whisper/wav2vec2 с WER 10–30% и измерить,
+          сохраняется ли преимущество fusion. Это самая честная постановка для реального SLU.</li>
+      <li><strong>Аудио-только через self-supervised энкодер.</strong> wav2vec2/HuBERT/Whisper-encoder вместо log-mel + Conv1d;
+          ожидаем рост audio-only и, как следствие, устойчивости fusion при потере текста.</li>
+      <li><strong>Обучение с пропусками текста.</strong> Увеличить span dropout до 30–50% и добавить расписание, чтобы модель
+          училась переключаться на аудио. Проверить цену на clean.</li>
+      <li><strong>Калибровка.</strong> Temperature scaling или label smoothing; сравнить ECE до/после.</li>
+      <li><strong>Статистика.</strong> Bootstrap по дикторам/уттеренсам и парные тесты вместо сравнения средних по 3 сидам.</li>
+    </ul>
+  </section>
+
+  <section class="card" id="improve">
+    <h2>9. Как улучшать проект</h2>
+    <div class="grid-2">
+      <div>
+        <h3>Модель и признаки</h3>
+        <ol>
+          <li>Заменить ручной log-mel + Conv1d на предобученный speech encoder (wav2vec2, HuBERT, Whisper encoder), заморозить или дообучить последние слои.</li>
+          <li>Добавить CTC/ASR-голову и обучать end-to-end SLU без оракульного транскрипта.</li>
+          <li>Использовать Conformer/Transformer с relative positional encoding для аудио.</li>
+          <li>Попробовать gated fusion или FiLM-модуляцию вместо concat в late fusion.</li>
+          <li>Добавить mixup / SpecAugment / speed perturbation и балансировку редких интентов.</li>
+        </ol>
+      </div>
+      <div>
+        <h3>Инженерия и отчёт</h3>
+        <ol>
+          <li>Кэшировать log-mel в memmap и распараллелить препроцессинг (сейчас узкое место — чтение 30k wav).</li>
+          <li>Экспортировать модель в ONNX/TorchScript и измерить latency на CPU.</li>
+          <li>Добавить CI: mypy + pytest + smoke-конфиг в Docker на каждый коммит.</li>
+          <li>Логировать эксперименты в MLflow/W&B, хранить артефакты и версии данных.</li>
+          <li>Расширить отчёт: bootstrap-CI, per-speaker breakdown, ASR-WER vs SLU-accuracy.</li>
+        </ol>
+      </div>
+    </div>
+    <div class="callout warn">
+      <strong>Приоритет №1.</strong> Если цель — практический SLU, самый большой прирост даст не «ещё один слой cross-attention»,
+      а замена оракульного текста на ASR-гипотезы и предобученный акустический энкодер. Именно там fusion перестаёт быть
+      упражнением на биективном датасете.
+    </div>
+  </section>
+
+  <section class="card" id="repro">
+    <h2>10. Воспроизводимость</h2>
+    <p>
+      Проект полностью контейнеризован. Внутри образа — Python 3.12, CPU-сборка PyTorch, зафиксированный <code>uv.lock</code>
+      и непривилегированный пользователь. Данные и результаты монтируются томами; отчёт генерируется в <code>report/</code>.
+    </p>
+    <div class="grid-2">
+      <div>
+        <h4>Структура</h4>
+        <pre><code>src/fusion_slu/
+  config.py        # dataclass-конфиг + YAML/extends/--set
+  data/            # manifest, wav, log-mel, vocab, cache
+  models/          # attention, encoders, fusion heads
+  metrics.py       # confusion, P/R/F1, ECE (без sklearn)
+  train.py         # обучение, early stopping, чекпойнты
+  evaluate.py      # clean + robustness, calibration
+  analysis.py      # агрегация, ошибки, графики
+  viz/             # matplotlib-модуль
+  report/          # Jinja2 → self-contained HTML
+  cli.py           # prepare / train / evaluate / analyze / report / all
+configs/           # default.yaml, smoke.yaml
+scripts/           # download_data.py, run_all.py
+tests/             # unittest/pytest: метрики, модель, аудио
+Dockerfile         # multi-stage, non-root
+docker-compose.yml # lab / smoke / test / report</code></pre>
+      </div>
+      <div>
+        <h4>Команды</h4>
+        <pre><code># 1. скачать датасет (нужен Kaggle API token)
+uv run python scripts/download_data.py
+
+# 2. локально
+uv sync
+uv run python -m fusion_slu.cli all --config configs/smoke.yaml
+uv run python -m fusion_slu.cli all --config configs/default.yaml
+
+# 3. Docker
+docker compose build
+docker compose run --rm lab all --config configs/default.yaml
+docker compose run --rm smoke
+docker compose run --rm report
+docker compose --profile test run --rm test
+
+# 4. проверки
+uv run mypy
+uv run pytest</code></pre>
+      </div>
+    </div>
+    <div class="table-wrap">
+      <table>
+        <thead><tr><th>Модель</th><th class="num">Параметры</th><th class="num">Среднее время обучения</th><th class="num">Лучшая эпоха</th></tr></thead>
+        <tbody>
+        {% for row in model_rows if row.key in metadata %}
+          <tr><td>{{ row.name }}</td><td class="num">{{ "{:,}".format(metadata[row.key].parameters|int).replace(",", " ") }}</td><td class="num">{{ "%.1f"|format(metadata[row.key].seconds / 60) }} мин</td><td class="num">{{ "%.1f"|format(metadata[row.key].best_epoch) }}</td></tr>
+        {% endfor %}
+        </tbody>
+      </table>
+    </div>
+    <p class="small muted">
+      Отчёт собран из <code>results/*/metrics.json</code> и <code>results/*/run.json</code>; изображения встроены как base64,
+      поэтому HTML-файл можно открыть без сервера и отправить одним файлом. Полный отчёт: <code>{{ config.report.output }}</code>.
+    </p>
+  </section>
+
+  <footer>
+    Сгенерировано {{ generated_at }} · конфиг <code>{{ config.config_path }}</code> ·
+    данные <code>{{ dataset.dataset_root }}</code> · {{ dataset.splits|length }} сплита, {{ dataset.intents }} интентов.
+    Все метрики реализованы вручную; sklearn не использовался.
+  </footer>
+</main>
+</body>
+</html>

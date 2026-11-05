@@ -1,5 +1,16 @@
 .venv/
 __pycache__/
+*.py[cod]
 data/
+cache/
 results/
+report/figures/
+logs/
 *.pt
+.mypy_cache/
+.pytest_cache/
+.uv/
+dist/
+build/
+*.egg-info/
+*.log

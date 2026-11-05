@@ -1,0 +1,84 @@
+# Default experiment: full Fluent Speech Commands, 4 models, 3 seeds.
+# Paths are resolved relative to the repository root.
+seed: 0
+device: auto
+results_dir: results/
+
+data:
+  root: data/fluent_speech_commands_dataset
+  csv_dir: data/fluent_speech_commands_dataset/data
+  train_csv: train_data.csv
+  valid_csv: valid_data.csv
+  test_csv: test_data.csv
+  cache_dir: cache
+  cache_tag: full
+  sample_rate: 16000
+  max_frames: 800          # 8.08 s at 10 ms hop; longer utterances are truncated
+  max_text_len: 32
+  max_train: null
+  max_valid: null
+  max_test: null
+  num_workers: 0
+
+audio:
+  n_mels: 40
+  n_fft: 400               # 25 ms
+  hop_length: 160          # 10 ms
+  win_length: 400
+  fmin: 20.0
+  fmax: 8000.0
+  cmvn: true
+  conv_strides: [4, 2]     # 8x temporal downsampling
+  conv_kernels: [5, 3]
+  spec_augment: true
+  freq_masks: 2
+  freq_width: 4
+  time_masks: 2
+  time_width: 10
+
+model:
+  modality: fusion         # fusion | text | audio | late
+  hid_dim: 128
+  audio_layers: 2
+  text_layers: 2
+  cross_layers: 2
+  n_heads: 4
+  ff_dim: 256
+  dropout: 0.15
+  attn_dropout: 0.10
+  text_token_dropout: 0.10
+  text_span_dropout: 0.05
+  max_len: 512
+
+training:
+  epochs: 6
+  batch_size: 128
+  eval_batch_size: 256
+  lr: 0.0004
+  weight_decay: 0.0001
+  grad_clip: 1.0
+  patience: 3
+  scheduler: cosine
+  warmup_epochs: 1
+  num_threads: 3
+  head_weights: [1.0, 1.0, 1.0]
+  seeds: [0, 1, 2]
+  modalities: [audio, text, fusion, late]
+
+eval:
+  conditions:
+    - clean
+    - text_drop_10
+    - text_drop_25
+    - text_drop_50
+    - text_missing
+    - text_shuffle
+    - audio_noise_5db
+    - audio_noise_0db
+
+report:
+  output: report/index.html
+  title: "Cross-attention fusion of text and audio for intent classification"
+  language: ru
+  top_confusions: 12
+  max_error_examples: 20

@@ -1,0 +1,39 @@
+# Fast end-to-end check: small subsets, one epoch, fewer models.
+extends: default.yaml
+
+results_dir: results/smoke/
+
+data:
+  cache_tag: smoke
+  max_train: 384
+  max_valid: 128
+  max_test: 160
+
+audio:
+  spec_augment: false
+
+model:
+  hid_dim: 64
+  ff_dim: 128
+  n_heads: 4
+  audio_layers: 1
+  text_layers: 1
+  cross_layers: 1
+
+training:
+  epochs: 2
+  batch_size: 64
+  eval_batch_size: 128
+  patience: 2
+  seeds: [0]
+  modalities: [audio, text, fusion]
+
+eval:
+  conditions:
+    - clean
+    - text_drop_50
+    - text_missing
+
+report:
+  output: report/smoke.html
+  title: "Smoke run: cross-attention fusion"

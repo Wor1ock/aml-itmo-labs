@@ -1,6 +1,67 @@
 services:
   lab:
-    build: .
+    build:
+      context: .
+      target: runtime
+    user: "${UID:-1000}:${GID:-1000}"
     volumes:
-      - ./data:/app/data
+      - ./data:/app/data:ro
+      - ./cache:/app/cache
       - ./results:/app/results
+      - ./report:/app/report
+      - ./configs:/app/configs:ro
+    environment:
+      PYTHONUNBUFFERED: "1"
+    command: ["all", "--config", "configs/default.yaml"]
+
+  smoke:
+    build:
+      context: .
+      target: runtime
+    user: "${UID:-1000}:${GID:-1000}"
+    volumes:
+      - ./data:/app/data:ro
+      - ./cache:/app/cache
+      - ./results:/app/results
+      - ./report:/app/report
+      - ./configs:/app/configs:ro
+    command: ["all", "--config", "configs/smoke.yaml", "--force"]
+
+  train:
+    build:
+      context: .
+      target: runtime
+    user: "${UID:-1000}:${GID:-1000}"
+    volumes:
+      - ./data:/app/data:ro
+      - ./cache:/app/cache
+      - ./results:/app/results
+      - ./configs:/app/configs:ro
+    command: ["train", "--config", "configs/default.yaml"]
+
+  report:
+    build:
+      context: .
+      target: runtime
+    user: "${UID:-1000}:${GID:-1000}"
+    volumes:
+      - ./data:/app/data:ro
+      - ./cache:/app/cache
+      - ./results:/app/results
+      - ./report:/app/report
+      - ./configs:/app/configs:ro
+    command: ["report", "--config", "configs/default.yaml"]
+
+  test:
+    profiles: ["test"]
+    build:
+      context: .
+      target: dev
+    volumes:
+      - ./data:/app/data:ro
+      - ./cache:/app/cache
+      - ./results:/app/results
+      - ./report:/app/report
+      - ./configs:/app/configs:ro
+      - ./tests:/app/tests:ro
+    command: ["-q"]
