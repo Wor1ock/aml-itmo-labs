@@ -4,6 +4,8 @@ from __future__ import annotations
 
 import json
 
+import pandas as pd
+
 from ecgmtl.analysis.compare import write_summary
 from ecgmtl.experiments import BASELINES, run_condition
 from ecgmtl.report.eda import build_eda
@@ -32,6 +34,17 @@ def test_smoke_pipeline(tiny_config) -> None:
     assert report.exists()
     html = report.read_text(encoding="utf-8")
     assert "mtl_equal" in html and "base64" in html
+
+
+def test_single_task_run_reports_only_its_task(tiny_config) -> None:
+    run_condition(tiny_config, "single_age", folds=1)
+    run_dir = tiny_config.output.out_dir / "single_age" / f"fold{tiny_config.split.test_folds[0]}"
+    metrics = json.loads((run_dir / "metrics.json").read_text(encoding="utf-8"))
+    assert "age" in metrics["test"]
+    assert "diag" not in metrics["test"]
+    frame = pd.read_csv(run_dir / "predictions.csv")
+    assert "age_pred" in frame.columns
+    assert not [column for column in frame.columns if column.startswith("rhythm_prob_")]
 
 
 def test_artefacts_are_written_once(tiny_config) -> None:
