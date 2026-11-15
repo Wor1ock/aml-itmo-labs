@@ -72,7 +72,10 @@ def _delta_table(table_dir: Path) -> pd.DataFrame:
     path = table_dir / "deltas.csv"
     if not path.exists():
         return pd.DataFrame()
-    frame = pd.read_csv(path)
+    try:
+        frame = pd.read_csv(path)
+    except pd.errors.EmptyDataError:
+        return pd.DataFrame()
     if frame.empty:
         return frame
     frame = frame[frame["method"].isin(METHOD_NOTES)]

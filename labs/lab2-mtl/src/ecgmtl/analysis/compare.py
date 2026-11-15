@@ -123,5 +123,6 @@ def write_summary(table_dir: Path, split: str = "test", baseline: Sequence[tuple
     frame.to_csv(table_dir / "summary.csv", index=False)
     if baseline:
         deltas = paired_deltas(runs, baseline)
-        deltas.to_csv(table_dir / "deltas.csv", index=False)
+        if not deltas.empty:
+            deltas.to_csv(table_dir / "deltas.csv", index=False)
     return summary
