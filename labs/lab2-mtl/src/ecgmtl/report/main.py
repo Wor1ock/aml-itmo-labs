@@ -89,6 +89,10 @@ def _delta_table(table_dir: Path) -> pd.DataFrame:
 
 def _agreement(pred: pd.DataFrame) -> tuple[pd.DataFrame, pd.DataFrame]:
     """Cross-tab of task-level correctness and a few examples where the tasks disagree."""
+    empty = (pd.DataFrame(), pd.DataFrame())
+    needed = {"rhythm_pred", "rhythm_true", "diag_prob_NORM"}
+    if not needed.issubset(pred.columns):
+        return empty
     rows = pred[pred["has_rhythm"].astype(bool)].copy()
     diag_true = rows[[f"diag_true_{name}" for name in SUPERCLASSES]].to_numpy()
     diag_prob = rows[[f"diag_prob_{name}" for name in SUPERCLASSES]].to_numpy()
@@ -251,19 +255,29 @@ def build_report(cfg: Config) -> Path:
         ]
         per_class = _per_class_table(json.loads((main_run / "metrics.json").read_text(encoding="utf-8")))
         agreement, examples = _agreement(test_rows)
-        blocks.append(
-            section(
-                "Ошибки",
-                "<p>качество по классам диагностики.</p>",
-                table(per_class, "{:.3f}"),
-                "<p>согласованность задач на тесте: как часто обе задачи решены верно.</p>",
-                table(agreement),
-                "<p>примеры записей, где одна задача решена верно, а другая нет.</p>",
-                table(examples, "{:.1f}"),
-                figure(plots.rhythm_confusion(test_rows, names, fig_dir / "report_rhythm_cm.png"), "матрица ошибок ритма"),
-                figure(plots.age_scatter(test_rows, fig_dir / "report_age.png"), "возраст: предсказание против истины"),
+        parts: list[str] = ["<p>качество по классам диагностики.</p>"]
+        if not per_class.empty:
+            parts.append(table(per_class, "{:.3f}"))
+        if not agreement.empty:
+            parts.append("<p>согласованность задач на тесте: как часто обе задачи решены верно.</p>")
+            parts.append(table(agreement))
+            parts.append("<p>примеры записей, где одна задача решена верно, а другая нет.</p>")
+            parts.append(table(examples, "{:.1f}"))
+        if names:
+            parts.append(
+                figure(
+                    plots.rhythm_confusion(test_rows, names, fig_dir / "report_rhythm_cm.png"),
+                    "матрица ошибок ритма",
+                )
             )
-        )
+        if "age_pred" in test_rows.columns:
+            parts.append(
+                figure(
+                    plots.age_scatter(test_rows, fig_dir / "report_age.png"),
+                    "возраст: предсказание против истины",
+                )
+            )
+        blocks.append(section("Ошибки", *parts))
 
     blocks.append(
         section(

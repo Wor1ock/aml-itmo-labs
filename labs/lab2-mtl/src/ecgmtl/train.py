@@ -61,30 +61,23 @@ def pos_weight_tensor(
 
 @torch.no_grad()
 def predict(model: MtlEcg, loader: Any, device: torch.device) -> dict[str, np.ndarray]:
+    """Predictions of every head the model has; targets and masks are always included."""
     model.eval()
-    diag_score, diag_true = [], []
-    rhythm_score, rhythm_true = [], []
-    age_pred, age_true = [], []
-    mask_all = []
+    collected: dict[str, list[np.ndarray]] = defaultdict(list)
     for batch in loader:
         batch = to_device(batch, device)
         outputs = model(batch["signal"])
-        diag_score.append(torch.sigmoid(outputs["diag"]).cpu().numpy())
-        rhythm_score.append(torch.softmax(outputs["rhythm"], dim=-1).cpu().numpy())
-        age_pred.append(outputs["age"].squeeze(-1).cpu().numpy())
-        diag_true.append(batch["diag"].cpu().numpy())
-        rhythm_true.append(batch["rhythm"].cpu().numpy())
-        age_true.append(batch["age"].cpu().numpy())
-        mask_all.append(batch["mask"].cpu().numpy())
-    return {
-        "diag_score": np.concatenate(diag_score),
-        "diag_true": np.concatenate(diag_true),
-        "rhythm_score": np.concatenate(rhythm_score),
-        "rhythm_true": np.concatenate(rhythm_true),
-        "age_pred": np.concatenate(age_pred),
-        "age_true": np.concatenate(age_true),
-        "mask": np.concatenate(mask_all),
-    }
+        if "diag" in outputs:
+            collected["diag_score"].append(torch.sigmoid(outputs["diag"]).cpu().numpy())
+        if "rhythm" in outputs:
+            collected["rhythm_score"].append(torch.softmax(outputs["rhythm"], dim=-1).cpu().numpy())
+        if "age" in outputs:
+            collected["age_pred"].append(outputs["age"].squeeze(-1).cpu().numpy())
+        collected["diag_true"].append(batch["diag"].cpu().numpy())
+        collected["rhythm_true"].append(batch["rhythm"].cpu().numpy())
+        collected["age_true"].append(batch["age"].cpu().numpy())
+        collected["mask"].append(batch["mask"].cpu().numpy())
+    return {key: np.concatenate(value) for key, value in collected.items()}
 
 
 def _log_conflict(
@@ -213,25 +206,30 @@ def _build_predictions(
     split_name: str,
     rhythm_names: Sequence[str],
 ) -> pd.DataFrame:
-    rhythm_columns = [f"rhythm_prob_{name}" for name in rhythm_names]
     frame = pd.DataFrame(
         {
             "ecg_id": manifest["ecg_id"].to_numpy(),
             "patient_id": manifest["patient_id"].to_numpy(),
             "strat_fold": manifest["strat_fold"].to_numpy(),
             "split": split_name,
-            "rhythm_true": pred["rhythm_true"],
-            "rhythm_pred": pred["rhythm_score"].argmax(axis=1),
             "age_true": pred["age_true"],
-            "age_pred": pred["age_pred"],
             "has_rhythm": pred["mask"][:, 1],
             "has_age": pred["mask"][:, 2],
         }
     )
+    if "rhythm_score" in pred:
+        frame["rhythm_true"] = pred["rhythm_true"]
+        frame["rhythm_pred"] = pred["rhythm_score"].argmax(axis=1)
+        rhythm_columns = [f"rhythm_prob_{name}" for name in rhythm_names]
+        frame = pd.concat(
+            [frame, pd.DataFrame(pred["rhythm_score"], columns=rhythm_columns)], axis=1
+        )
+    if "age_pred" in pred:
+        frame["age_pred"] = pred["age_pred"]
     for i, name in enumerate(SUPERCLASSES):
         frame[f"diag_true_{name}"] = pred["diag_true"][:, i].astype(int)
-        frame[f"diag_prob_{name}"] = pred["diag_score"][:, i]
-    frame = pd.concat([frame, pd.DataFrame(pred["rhythm_score"], columns=rhythm_columns)], axis=1)
+        if "diag_score" in pred:
+            frame[f"diag_prob_{name}"] = pred["diag_score"][:, i]
     return frame
 
 

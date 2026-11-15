@@ -92,21 +92,21 @@ def task_metrics(
     pred: dict[str, np.ndarray],
     meta: DatasetMeta,
 ) -> dict[str, Any]:
-    """Metrics for all tasks from one prediction bundle."""
+    """Metrics for the tasks the model was trained on; others are skipped."""
     names = list(meta["superclasses"])
     rhythm_names = list(meta["rhythm_classes"])
     mask = pred["mask"]
     out: dict[str, Any] = {}
     diag_rows = mask[:, 0]
-    if diag_rows.any():
+    if "diag_score" in pred and diag_rows.any():
         out["diag"] = diag_metrics(pred["diag_true"][diag_rows], pred["diag_score"][diag_rows], names)
     rhythm_rows = mask[:, 1]
-    if rhythm_rows.any():
+    if "rhythm_score" in pred and rhythm_rows.any():
         out["rhythm"] = rhythm_metrics(
             pred["rhythm_true"][rhythm_rows], pred["rhythm_score"][rhythm_rows], rhythm_names
         )
     age_rows = mask[:, 2]
-    if age_rows.any():
+    if "age_pred" in pred and age_rows.any():
         out["age"] = age_metrics(pred["age_true"][age_rows], pred["age_pred"][age_rows])
     out["n"] = {"diag": int(diag_rows.sum()), "rhythm": int(rhythm_rows.sum()), "age": int(age_rows.sum())}
     return out
