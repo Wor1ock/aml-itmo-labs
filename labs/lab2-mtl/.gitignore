@@ -1,9 +1,12 @@
-# data and artifacts are never committed
-data/
-cache/
-outputs/
-report/*.html
-report/figures/
+# data and artifacts are never committed (anchored to the lab directory)
+/data/
+/cache/
+/outputs/
+/outputs_smoke/
+/report/*.html
+/report_smoke/
+/report/figures/
+/logs/
 
 # python
 __pycache__/
