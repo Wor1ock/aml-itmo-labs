@@ -1,0 +1,23 @@
+# Tiny end-to-end run: a few hundred records, one epoch, one fold, one seed.
+data:
+  root: data
+
+train:
+  epochs: 1
+  batch_size: 32
+  limit_train: 256
+  limit_val: 128
+  patience: 1
+  log_every: 5
+  conflict_every: 5
+
+output:
+  out_dir: outputs_smoke
+  report_dir: report_smoke
+  run_name: smoke
+
+experiments:
+  folds: 1
+  ablation_folds: 1
+  main: [single_diag, mtl_equal]
+  ablations: []

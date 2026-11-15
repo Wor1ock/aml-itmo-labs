@@ -1,0 +1,56 @@
+data:
+  root: data
+  hz: 100
+  signal_len: 1000
+  n_leads: 12
+  rhythm_topk: 8
+  min_age: 0
+  max_age: 100
+
+split:
+  test_folds: [10, 8, 6, 4, 2]
+  val_folds: [9, 7, 5, 3, 1]
+  run: 0
+
+model:
+  channels: [64, 128, 256]
+  kernels: [7, 5, 3]
+  dropout: 0.2
+  hidden: 256
+  head_hidden: 128
+  pool: attention
+
+loss:
+  strategy: equal
+  tasks: [diag, rhythm, age]
+  weights:
+    diag: 1.0
+    rhythm: 1.0
+    age: 1.0
+  diag_pos_weight: true
+
+train:
+  epochs: 15
+  batch_size: 64
+  lr: 0.001
+  weight_decay: 0.0001
+  seed: 42
+  device: auto
+  num_workers: 0
+  patience: 5
+  grad_clip: 1.0
+  log_every: 50
+  conflict_every: 100
+  limit_train: 0
+  limit_val: 0
+
+output:
+  out_dir: outputs
+  report_dir: report
+  run_name: full
+
+experiments:
+  folds: 5
+  ablation_folds: 2
+  main: [single_diag, single_rhythm, single_age, mtl_equal, mtl_uncertainty, mtl_pcgrad]
+  ablations: [loto_no_rhythm, loto_no_age, mtl_age_weight_0.1]
