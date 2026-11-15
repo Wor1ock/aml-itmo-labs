@@ -11,7 +11,7 @@ import subprocess
 import time
 from collections import defaultdict
 from pathlib import Path
-from typing import Any
+from typing import Any, Sequence
 
 import numpy as np
 import pandas as pd
@@ -208,9 +208,12 @@ def _run_meta(device: torch.device, seconds: float, epochs: int) -> dict[str, An
 
 
 def _build_predictions(
-    pred: dict[str, np.ndarray], manifest: pd.DataFrame, split_name: str
+    pred: dict[str, np.ndarray],
+    manifest: pd.DataFrame,
+    split_name: str,
+    rhythm_names: Sequence[str],
 ) -> pd.DataFrame:
-    rhythm_names = [f"rhythm_prob_{i}" for i in range(pred["rhythm_score"].shape[1])]
+    rhythm_columns = [f"rhythm_prob_{name}" for name in rhythm_names]
     frame = pd.DataFrame(
         {
             "ecg_id": manifest["ecg_id"].to_numpy(),
@@ -228,7 +231,7 @@ def _build_predictions(
     for i, name in enumerate(SUPERCLASSES):
         frame[f"diag_true_{name}"] = pred["diag_true"][:, i].astype(int)
         frame[f"diag_prob_{name}"] = pred["diag_score"][:, i]
-    frame = pd.concat([frame, pd.DataFrame(pred["rhythm_score"], columns=rhythm_names)], axis=1)
+    frame = pd.concat([frame, pd.DataFrame(pred["rhythm_score"], columns=rhythm_columns)], axis=1)
     return frame
 
 
@@ -282,7 +285,8 @@ def run_training(cfg: Config, run_dir: Path) -> dict[str, Any]:
         params += list(uncertainty.parameters())
     optimizer = torch.optim.AdamW(params, lr=cfg.train.lr, weight_decay=cfg.train.weight_decay)
     scheduler = torch.optim.lr_scheduler.CosineAnnealingLR(optimizer, T_max=cfg.train.epochs)
-    generator = torch.Generator(device=device)
+    # PCGrad randomises the order of projections; a CPU generator keeps it reproducible
+    generator = torch.Generator()
     generator.manual_seed(cfg.train.seed)
 
     history: list[dict[str, Any]] = []
@@ -340,6 +344,7 @@ def run_training(cfg: Config, run_dir: Path) -> dict[str, Any]:
     )
     val_pred = predict(model, val_loader, device)
     test_pred = predict(model, test_loader, device)
+    rhythm_names = [str(name) for name in meta["rhythm_classes"]]
     metrics = {
         "val": task_metrics(val_pred, meta),
         "test": task_metrics(test_pred, meta),
@@ -347,11 +352,25 @@ def run_training(cfg: Config, run_dir: Path) -> dict[str, Any]:
         "best_val_score": best_score,
         "monitor": monitor,
         "params": model.count_parameters(),
+        "split": {
+            "test_fold": cfg.split.test_folds[cfg.split.run],
+            "val_fold": cfg.split.val_folds[cfg.split.run],
+            "n_train": int(len(train_idx)),
+            "n_val": int(len(val_idx)),
+            "n_test": int(len(split.test)),
+        },
+        "tasks": list(cfg.loss.tasks),
+        "strategy": cfg.loss.strategy,
+        "weights": cfg.loss.weights,
     }
     (run_dir / "metrics.json").write_text(json.dumps(metrics, indent=2), encoding="utf-8")
     (run_dir / "history.json").write_text(json.dumps(history, indent=2), encoding="utf-8")
-    test_frame = _build_predictions(test_pred, manifest.iloc[split.test].reset_index(drop=True), "test")
-    val_frame = _build_predictions(val_pred, manifest.iloc[np.sort(val_idx)].reset_index(drop=True), "val")
+    test_frame = _build_predictions(
+        test_pred, manifest.iloc[split.test].reset_index(drop=True), "test", rhythm_names
+    )
+    val_frame = _build_predictions(
+        val_pred, manifest.iloc[np.sort(val_idx)].reset_index(drop=True), "val", rhythm_names
+    )
     pd.concat([test_frame, val_frame]).to_csv(run_dir / "predictions.csv", index=False)
     save_config(cfg, run_dir / "config.yaml")
     meta_info = _run_meta(device, time.time() - started, len(history))
