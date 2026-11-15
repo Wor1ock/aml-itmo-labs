@@ -48,8 +48,8 @@ uv run ecgmtl experiments          # сетка условий x фолды
 uv run ecgmtl report               # report/index.html
 ```
 
-Версии фиксированы: Python 3.11, `torch==2.4.1+cu118` (CUDA 11.8, работает на драйверах
-не ниже 520, включая 12.x), остальное — по `uv.lock`.
+Версии фиксированы: Python 3.11, `torch==2.5.1+cu121` (индекс `download.pytorch.org/whl/cu121`,
+работает на драйверах не ниже 525, включая 12.x), остальное — по `uv.lock`.
 
 На машинах, где `physionet.org` недоступен, скачивание идёт с зеркала официального
 архива 1.0.3 на Hugging Face: `--set data.prefer_mirror=true`. В Dockerfile этот
