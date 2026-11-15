@@ -9,6 +9,7 @@ from typing import Any
 import pandas as pd
 
 from ..config import Config
+from ..data.labels import SUPERCLASSES
 from ..experiments import best_run_dir
 from ..logging_utils import get_logger
 from ..viz import plots
@@ -84,6 +85,30 @@ def _delta_table(table_dir: Path) -> pd.DataFrame:
     return frame[["method", "baseline", "metric", "Δ", "p", "n"]].rename(
         columns={"method": "метод", "baseline": "baseline"}
     )
+
+
+def _agreement(pred: pd.DataFrame) -> tuple[pd.DataFrame, pd.DataFrame]:
+    """Cross-tab of task-level correctness and a few examples where the tasks disagree."""
+    rows = pred[pred["has_rhythm"].astype(bool)].copy()
+    diag_true = rows[[f"diag_true_{name}" for name in SUPERCLASSES]].to_numpy()
+    diag_prob = rows[[f"diag_prob_{name}" for name in SUPERCLASSES]].to_numpy()
+    diag_ok = ((diag_prob >= 0.5).astype(int) == diag_true).all(axis=1)
+    rhythm_ok = rows["rhythm_pred"].to_numpy() == rows["rhythm_true"].to_numpy()
+    table = pd.crosstab(
+        pd.Series(diag_ok, name="диагностика верна"),
+        pd.Series(rhythm_ok, name="ритм верен"),
+    ).reset_index()
+    disagree = rows[diag_ok != rhythm_ok]
+    examples = pd.DataFrame(
+        {
+            "ecg_id": disagree["ecg_id"].to_numpy()[:8],
+            "ритм истина": disagree["rhythm_true"].to_numpy()[:8],
+            "ритм предсказание": disagree["rhythm_pred"].to_numpy()[:8],
+            "возраст истина": disagree["age_true"].to_numpy()[:8],
+            "возраст предсказание": disagree["age_pred"].to_numpy()[:8],
+        }
+    )
+    return table, examples
 
 
 def _per_class_table(metrics: dict[str, Any]) -> pd.DataFrame:
@@ -225,10 +250,16 @@ def build_report(cfg: Config) -> Path:
             if column.startswith("rhythm_prob_")
         ]
         per_class = _per_class_table(json.loads((main_run / "metrics.json").read_text(encoding="utf-8")))
+        agreement, examples = _agreement(test_rows)
         blocks.append(
             section(
                 "Ошибки",
+                "<p>качество по классам диагностики.</p>",
                 table(per_class, "{:.3f}"),
+                "<p>согласованность задач на тесте: как часто обе задачи решены верно.</p>",
+                table(agreement),
+                "<p>примеры записей, где одна задача решена верно, а другая нет.</p>",
+                table(examples, "{:.1f}"),
                 figure(plots.rhythm_confusion(test_rows, names, fig_dir / "report_rhythm_cm.png"), "матрица ошибок ритма"),
                 figure(plots.age_scatter(test_rows, fig_dir / "report_age.png"), "возраст: предсказание против истины"),
             )
