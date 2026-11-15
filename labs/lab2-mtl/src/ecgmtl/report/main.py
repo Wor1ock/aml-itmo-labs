@@ -135,12 +135,16 @@ def build_report(cfg: Config) -> Path:
         )
     )
 
+    metrics: dict[str, Any] = {}
     if main_run is not None:
         metrics = json.loads((main_run / "metrics.json").read_text(encoding="utf-8"))
-        meta_info = json.loads((main_run / "run_meta.json").read_text(encoding="utf-8"))
-        params = metrics.get("params", {})
-        params_table = pd.DataFrame(
-            [{"часть модели": key, "параметров": value} for key, value in params.items()]
+        split_info = metrics.get("split", {})
+        split_table = pd.DataFrame(
+            [
+                {"часть": "train", "записей": split_info.get("n_train", "—"), "фолды": "все, кроме теста и валидации"},
+                {"часть": "валидация", "записей": split_info.get("n_val", "—"), "фолды": split_info.get("val_fold", "—")},
+                {"часть": "тест", "записей": split_info.get("n_test", "—"), "фолды": split_info.get("test_fold", "—")},
+            ]
         )
         blocks.append(
             section(
@@ -148,10 +152,13 @@ def build_report(cfg: Config) -> Path:
                 "<p>PTB-XL, стратифицированные по пациенту фолды <code>strat_fold</code>. "
                 "тест и валидация — разные фолды, пациенты не пересекаются, тест не "
                 "участвует в выборе эпох, весов и стратегии.</p>",
-                table(params_table),
+                table(split_table),
             )
         )
 
+    params_table = pd.DataFrame(
+        [{"часть модели": key, "параметров": value} for key, value in metrics.get("params", {}).items()]
+    )
     blocks.append(
         section(
             "Архитектура и лоссы",
@@ -163,6 +170,7 @@ def build_report(cfg: Config) -> Path:
             "<p>uncertainty weighting: <code>L = Σ L_i / (2σ_i²) + log σ_i</code>, "
             "<code>log σ_i²</code> обучается вместе с моделью. PCGrad: градиенты задач "
             "на общем энкодере проецируются, если их скалярное произведение отрицательно.</p>",
+            table(params_table) if not params_table.empty else "",
         )
     )
 

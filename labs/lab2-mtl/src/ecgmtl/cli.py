@@ -8,7 +8,12 @@ from pathlib import Path
 from typing import Any
 
 from .config import Config, load_config
+from .data.download import ensure_raw
+from .data.prepare import prepare
+from .experiments import run_condition, run_experiments
 from .logging_utils import setup_logging
+from .report.eda import build_eda
+from .report.main import build_report
 
 
 def _add_common(parser: argparse.ArgumentParser) -> None:
@@ -41,12 +46,6 @@ def _setup(cfg: Config, name: str) -> None:
 
 
 def _run(args: argparse.Namespace) -> int:
-    from .data.download import ensure_raw
-    from .data.prepare import prepare
-    from .experiments import run_condition, run_experiments
-    from .report.eda import build_eda
-    from .report.main import build_report
-
     cfg = _load(args)
     _setup(cfg, args.command or "ecgmtl")
     if args.command == "download":
