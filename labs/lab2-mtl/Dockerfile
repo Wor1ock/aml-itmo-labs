@@ -5,6 +5,7 @@ FROM python:3.11-slim
 ENV PYTHONUNBUFFERED=1 \
     PYTHONDONTWRITEBYTECODE=1 \
     UV_LINK_MODE=copy \
+    UV_HTTP_TIMEOUT=300 \
     PATH="/app/.venv/bin:${PATH}"
 
 # git is needed for the commit hash in run_meta.json, curl for manual checks
