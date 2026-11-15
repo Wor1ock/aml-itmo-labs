@@ -1,6 +1,6 @@
 # Static data preparation happens at build time; the code is copied last so that
 # editing a source file does not invalidate the download and preprocessing layers.
-FROM python:3.12-slim
+FROM python:3.11-slim
 
 ENV PYTHONUNBUFFERED=1 \
     PYTHONDONTWRITEBYTECODE=1 \
