@@ -62,7 +62,7 @@ class EcgDataset(Dataset[dict[str, Tensor]]):
 
     def __getitem__(self, i: int) -> dict[str, Tensor]:
         row = int(self.indices[i])
-        rhythm_ok = self.rhythm[row] >= 0
+        rhythm_ok = bool(self.rhythm[row] >= 0)
         age_ok = bool(np.isfinite(self.age[row]))
         return {
             "signal": torch.from_numpy(np.asarray(self.signals[row], dtype=np.float32)),

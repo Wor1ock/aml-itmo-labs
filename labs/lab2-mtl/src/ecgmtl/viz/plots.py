@@ -57,7 +57,7 @@ def label_corr(matrix: pd.DataFrame, path: Path, title: str) -> Path:
     ax.grid(False)
     for i in range(len(matrix.index)):
         for j in range(len(matrix.columns)):
-            value = matrix.iloc[i, j]
+            value = float(matrix.iloc[i, j])
             if np.isfinite(value):
                 ax.text(j, i, f"{value:.2f}", ha="center", va="center", fontsize=7)
     ax.set_title(title)

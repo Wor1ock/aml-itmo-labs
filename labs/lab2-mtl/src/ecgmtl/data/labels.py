@@ -10,6 +10,7 @@ from __future__ import annotations
 import ast
 from collections import Counter
 from pathlib import Path
+from typing import cast
 
 import numpy as np
 import pandas as pd
@@ -96,12 +97,12 @@ def build_labels(db: pd.DataFrame, statements: pd.DataFrame, cfg: DataConfig) ->
         cfg.rhythm_topk,
     )
 
-    ecg_ids = db["ecg_id"].astype(int).tolist()
-    patient_ids = db["patient_id"].astype(int).tolist()
-    folds = db["strat_fold"].astype(int).tolist()
-    ages = db["age"].astype(float).tolist()
-    sexes = db["sex"].astype(int).tolist()
-    filenames = db["filename_lr"].astype(str).tolist()
+    ecg_ids = cast(list[int], db["ecg_id"].astype(int).tolist())
+    patient_ids = cast(list[int], db["patient_id"].astype(int).tolist())
+    folds = cast(list[int], db["strat_fold"].astype(int).tolist())
+    ages = cast(list[float], db["age"].astype(float).tolist())
+    sexes = cast(list[int], db["sex"].astype(int).tolist())
+    filenames = cast(list[str], db["filename_lr"].astype(str).tolist())
 
     rows = []
     for i, codes in enumerate(per_record):

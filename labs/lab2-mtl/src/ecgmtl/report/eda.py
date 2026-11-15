@@ -4,6 +4,7 @@ from __future__ import annotations
 
 from pathlib import Path
 
+import numpy as np
 import pandas as pd
 
 from ..analysis.correlations import age_relation, cramers_v, relatedness_matrix

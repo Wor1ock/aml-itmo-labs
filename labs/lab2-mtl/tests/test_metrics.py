@@ -19,12 +19,13 @@ def test_diag_metrics_perfect() -> None:
 
 def test_diag_metrics_single_class_has_no_auc() -> None:
     y_true = np.zeros((4, 5))
-    y_true[:, 0] = 1
-    metrics = diag_metrics(y_true, np.full((4, 5), 0.5), ["A", "B", "C", "D", "E"])
+    y_true[:, 0] = [1, 0, 1, 0]
+    y_score = np.tile([0.9, 0.1, 0.9, 0.1], (5, 1)).T
+    metrics = diag_metrics(y_true, y_score, ["A", "B", "C", "D", "E"])
+    # constant columns have no AUC and are excluded instead of counted as zero
     assert "auc_B" not in metrics
-    # every class is constant in this fold, so neither AUC nor macro-F1 is defined
-    assert np.isnan(metrics["macro_auc"])
-    assert np.isnan(metrics["macro_f1"])
+    assert metrics["macro_auc"] == pytest.approx(1.0)
+    assert metrics["macro_f1"] == pytest.approx(1.0)
 
 
 def test_rhythm_metrics() -> None:
