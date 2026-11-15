@@ -14,6 +14,7 @@ from pathlib import Path
 import numpy as np
 import pandas as pd
 
+from ..config import DataConfig
 from ..logging_utils import get_logger
 
 SUPERCLASSES: tuple[str, ...] = ("NORM", "MI", "STTC", "CD", "HYP")
@@ -86,14 +87,14 @@ def rhythm_target(codes: dict[str, float], order: list[str]) -> int:
     return min(candidates, key=lambda item: (-item[0], item[1]))[1]
 
 
-def build_labels(db: pd.DataFrame, statements: pd.DataFrame, cfg: "object") -> pd.DataFrame:
+def build_labels(db: pd.DataFrame, statements: pd.DataFrame, cfg: DataConfig) -> pd.DataFrame:
     """Turn the PTB-XL metadata table into a flat label frame."""
     log = get_logger()
     rhythm_codes = set(statements.index[statements["rhythm"] == 1])
     per_record = [parse_scp_codes(raw) for raw in db["scp_codes"]]
     order = rhythm_order(
         [sorted(code for code in codes if code in rhythm_codes) for codes in per_record],
-        cfg.rhythm_topk,  # type: ignore[attr-defined]
+        cfg.rhythm_topk,
     )
 
     rows = []
@@ -101,7 +102,7 @@ def build_labels(db: pd.DataFrame, statements: pd.DataFrame, cfg: "object") -> p
         target = diag_target(codes, statements)
         source = db.iloc[i]
         age = float(source["age"]) if pd.notna(source["age"]) else float("nan")
-        if not cfg.min_age <= age <= cfg.max_age:  # type: ignore[attr-defined]
+        if not cfg.min_age <= age <= cfg.max_age:
             age = float("nan")
         record = {
             "ecg_id": int(source["ecg_id"]),

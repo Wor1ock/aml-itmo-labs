@@ -49,8 +49,13 @@ def summarize(runs: dict[str, dict[str, list[float]]]) -> dict[str, Any]:
     for condition, tasks in runs.items():
         summary[condition] = {}
         for task, metrics in tasks.items():
-            folds = [dict(zip(metrics, values)) for values in zip(*metrics.values())]
-            summary[condition][task] = aggregate(folds, list(metrics))
+            n_folds = max(len(values) for values in metrics.values())
+            # a metric missing in one fold must not shift the pairing of the others
+            clean = {name: values for name, values in metrics.items() if len(values) == n_folds}
+            if not clean:
+                continue
+            folds = [dict(zip(clean, values)) for values in zip(*clean.values())]
+            summary[condition][task] = aggregate(folds, list(clean))
     return summary
 
 
