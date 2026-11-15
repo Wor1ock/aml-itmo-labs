@@ -17,7 +17,7 @@ from ecgmtl.data.labels import (
 )
 from ecgmtl.data.prepare import load_processed
 
-from .conftest import write_dataset
+from conftest import write_dataset
 
 
 def test_parse_scp_codes_handles_garbage() -> None:

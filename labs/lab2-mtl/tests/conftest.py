@@ -28,8 +28,9 @@ N_RECORDS = 60
 
 def make_manifest(n: int = N_RECORDS, seed: int = 0) -> pd.DataFrame:
     rng = np.random.default_rng(seed)
-    folds = (np.arange(n) % 10) + 1
     patients = np.arange(n) // 2 + 1000
+    # both records of a patient must share the same fold, otherwise the split leaks
+    folds = (patients % 10) + 1
     diag = rng.integers(0, 2, size=(n, len(SUPERCLASSES))).astype(np.int8)
     rhythm = rng.integers(-1, len(RHYTHM), size=n)
     age = rng.normal(60, 12, size=n).round(0)
