@@ -1,0 +1,42 @@
+x-service: &service
+  build: .
+  image: ecgmtl:latest
+  # data is baked into the image and read-only here; only results are mounted
+  volumes:
+    - ./outputs:/app/outputs
+    - ./report:/app/report
+
+services:
+  app:
+    <<: *service
+    command: ["python", "-m", "ecgmtl.cli", "all", "--config", "configs/default.yaml"]
+
+  smoke:
+    <<: *service
+    command: ["python", "-m", "ecgmtl.cli", "all", "--config", "configs/smoke.yaml"]
+
+  prepare:
+    <<: *service
+    command: ["python", "-m", "ecgmtl.cli", "prepare", "--set", "data.prefer_mirror=true", "--set", "data.root=/app/state/data"]
+    volumes:
+      - ./data:/app/state/data
+
+  eda:
+    <<: *service
+    command: ["python", "-m", "ecgmtl.cli", "eda"]
+
+  train:
+    <<: *service
+    command: ["python", "-m", "ecgmtl.cli", "train", "--condition", "mtl_equal", "--folds", "1"]
+
+  experiments:
+    <<: *service
+    command: ["python", "-m", "ecgmtl.cli", "experiments"]
+
+  report:
+    <<: *service
+    command: ["python", "-m", "ecgmtl.cli", "report"]
+
+  test:
+    <<: *service
+    command: ["sh", "-c", "mypy && pytest"]
