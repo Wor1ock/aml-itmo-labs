@@ -8,9 +8,10 @@ from pathlib import Path
 from typing import Any
 
 from .config import Config, load_config
+from .analysis.compare import write_summary
 from .data.download import ensure_raw
 from .data.prepare import prepare
-from .experiments import run_condition, run_experiments
+from .experiments import BASELINES, run_condition, run_experiments
 from .logging_utils import setup_logging
 from .report.eda import build_eda
 from .report.main import build_report
@@ -58,6 +59,8 @@ def _run(args: argparse.Namespace) -> int:
         run_condition(cfg, args.condition, args.folds, force=args.force)
     elif args.command == "experiments":
         run_experiments(cfg, force=args.force)
+    elif args.command == "summarize":
+        write_summary(cfg.output.out_dir, split="test", baseline=BASELINES)
     elif args.command == "report":
         build_report(cfg)
     elif args.command in ("all", "smoke"):
@@ -79,6 +82,7 @@ def build_parser() -> argparse.ArgumentParser:
         ("eda", "write report/eda.html"),
         ("train", "train one condition on one fold"),
         ("experiments", "run the whole grid and aggregate it"),
+        ("summarize", "aggregate finished runs into summary.json"),
         ("report", "write report/index.html"),
         ("all", "prepare, eda, experiments, report"),
         ("smoke", "same as all, meant for the smoke config"),
