@@ -47,9 +47,14 @@ def _read_signal(path: Path, cfg: DataConfig) -> np.ndarray | None:
     return (signal - mean) / (std + 1e-6)
 
 
-def prepare(cfg: DataConfig) -> Path:
-    """Build ``data/processed`` and return its path."""
+def prepare(cfg: DataConfig, force: bool = False) -> Path:
+    """Build ``data/processed`` and return its path; a finished build is reused."""
     log = get_logger()
+    out = cfg.root / "processed"
+    done = [out / SIGNALS_NAME, out / MANIFEST_NAME, out / META_NAME]
+    if not force and all(path.exists() for path in done):
+        log.info("processed data already present in %s, skipping", out)
+        return out
     raw = ensure_raw(cfg)
     db = pd.read_csv(raw / "ptbxl_database.csv")
     statements = load_statements(raw / "scp_statements.csv")
@@ -57,7 +62,6 @@ def prepare(cfg: DataConfig) -> Path:
     rhythm_classes = list(dict.fromkeys(labels["rhythm_code"]))
     rhythm_classes = [name for name in rhythm_classes if name != "none"]
 
-    out = cfg.root / "processed"
     out.mkdir(parents=True, exist_ok=True)
     tmp_signals = out / "signals.tmp.npy"
     signals = np.lib.format.open_memmap(

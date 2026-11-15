@@ -52,7 +52,7 @@ def _run(args: argparse.Namespace) -> int:
     if args.command == "download":
         ensure_raw(cfg.data)
     elif args.command == "prepare":
-        prepare(cfg.data)
+        prepare(cfg.data, force=args.force)
     elif args.command == "eda":
         build_eda(cfg)
     elif args.command == "train":
@@ -64,7 +64,7 @@ def _run(args: argparse.Namespace) -> int:
     elif args.command == "report":
         build_report(cfg)
     elif args.command in ("all", "smoke"):
-        prepare(cfg.data)
+        prepare(cfg.data, force=args.force)
         build_eda(cfg)
         run_experiments(cfg, force=args.force)
         build_report(cfg)
