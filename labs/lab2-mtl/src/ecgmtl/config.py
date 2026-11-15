@@ -166,6 +166,25 @@ def _check_unknown(raw: dict[str, Any], known: Any, where: str) -> None:
         raise ConfigError(f"unknown keys in {where}: {sorted(unknown)}")
 
 
+def _coerce(value: Any, default: Any) -> Any:
+    """Convert CLI strings into the type of the field default (``--set train.epochs=3``)."""
+    if default is dataclasses.MISSING:
+        return value
+    if isinstance(value, str) and isinstance(default, bool):
+        return value.strip().lower() in ("1", "true", "yes", "on")
+    if isinstance(value, str) and isinstance(default, int) and not isinstance(default, bool):
+        return int(value)
+    if isinstance(value, str) and isinstance(default, float):
+        return float(value)
+    if isinstance(default, tuple):
+        items = [item.strip() for item in value.split(",") if item.strip()] if isinstance(value, str) else value
+        if isinstance(items, (list, tuple)):
+            if default and all(isinstance(item, int) for item in default):
+                return tuple(int(item) for item in items)
+            return tuple(str(item) for item in items)
+    return value
+
+
 def _build_section(cls: Any, raw: dict[str, Any], where: str) -> Any:
     _check_unknown(raw, cls, where)
     kwargs: dict[str, Any] = {}
@@ -174,11 +193,9 @@ def _build_section(cls: Any, raw: dict[str, Any], where: str) -> Any:
             if f.default is dataclasses.MISSING and f.default_factory is dataclasses.MISSING:  # type: ignore[misc]
                 raise ConfigError(f"missing required key {where}.{f.name}")
             continue
-        value = raw[f.name]
+        value = _coerce(raw[f.name], f.default)
         if isinstance(f.default, Path):
             value = Path(value)
-        elif isinstance(f.default, tuple) and isinstance(value, list):
-            value = tuple(value)
         kwargs[f.name] = value
     return cls(**kwargs)
 

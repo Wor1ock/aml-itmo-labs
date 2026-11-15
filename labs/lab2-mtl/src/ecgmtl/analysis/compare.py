@@ -23,28 +23,30 @@ def read_fold_metrics(run_dir: Path) -> dict[str, Any]:
     return json.loads((run_dir / "metrics.json").read_text(encoding="utf-8"))
 
 
-def collect_runs(table_dir: Path, split: str = "test") -> dict[str, dict[str, list[float]]]:
+def collect_runs(
+    table_dir: Path, split: str = "test"
+) -> dict[str, dict[str, dict[str, list[float]]]]:
     """condition -> task -> metric -> list of per-fold values."""
-    out: dict[str, dict[str, list[float]]] = {}
+    out: dict[str, dict[str, dict[str, list[float]]]] = {}
     for condition_dir in sorted(table_dir.glob("*/")):
         condition = condition_dir.name
         per_fold = sorted(condition_dir.glob("fold*/metrics.json"))
         if not per_fold:
             continue
-        out.setdefault(condition, {})
+        tasks = out.setdefault(condition, {})
         for path in per_fold:
             metrics = json.loads(path.read_text(encoding="utf-8"))[split]
             for task, task_metrics in metrics.items():
                 if task == "n" or not isinstance(task_metrics, dict):
                     continue
-                out[condition].setdefault(task, {})
+                bucket = tasks.setdefault(task, {})
                 for metric, value in task_metrics.items():
                     if isinstance(value, (int, float)) and np.isfinite(value):
-                        out[condition][task].setdefault(metric, []).append(float(value))
+                        bucket.setdefault(metric, []).append(float(value))
     return out
 
 
-def summarize(runs: dict[str, dict[str, list[float]]]) -> dict[str, Any]:
+def summarize(runs: dict[str, dict[str, dict[str, list[float]]]]) -> dict[str, Any]:
     summary: dict[str, Any] = {}
     for condition, tasks in runs.items():
         summary[condition] = {}
@@ -80,7 +82,7 @@ def flat_table(summary: dict[str, Any]) -> pd.DataFrame:
 
 
 def paired_deltas(
-    runs: dict[str, dict[str, list[float]]],
+    runs: dict[str, dict[str, dict[str, list[float]]]],
     baseline: Sequence[tuple[str, str]],
     conditions: Iterable[str] | None = None,
 ) -> pd.DataFrame:
@@ -90,7 +92,7 @@ def paired_deltas(
     for condition in conditions or runs:
         for task, metrics in runs.get(condition, {}).items():
             ref_name = baseline_of.get(task)
-            reference = runs.get(ref_name or "", {}).get(task, {})
+            reference: dict[str, list[float]] = runs.get(ref_name or "", {}).get(task, {})
             for metric, values in metrics.items():
                 ref_values = reference.get(metric, [])
                 if condition == ref_name or len(values) != len(ref_values) or len(values) < 2:

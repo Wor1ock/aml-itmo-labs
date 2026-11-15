@@ -22,8 +22,9 @@ def test_diag_metrics_single_class_has_no_auc() -> None:
     y_true[:, 0] = 1
     metrics = diag_metrics(y_true, np.full((4, 5), 0.5), ["A", "B", "C", "D", "E"])
     assert "auc_B" not in metrics
-    assert metrics["macro_auc"] == pytest.approx(1.0)
-    assert metrics["macro_f1"] <= 1.0
+    # every class is constant in this fold, so neither AUC nor macro-F1 is defined
+    assert np.isnan(metrics["macro_auc"])
+    assert np.isnan(metrics["macro_f1"])
 
 
 def test_rhythm_metrics() -> None:

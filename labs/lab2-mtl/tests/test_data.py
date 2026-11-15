@@ -52,7 +52,10 @@ def test_rhythm_prefers_highest_likelihood() -> None:
 
 
 def test_split_has_no_patient_overlap() -> None:
-    manifest = pd.DataFrame({"patient_id": [1, 1, 2, 2, 3, 3, 4], "strat_fold": [1, 1, 2, 2, 3, 3, 1]})
+    # patient 1 appears in folds 1 and 2, so test and validation would share a patient
+    manifest = pd.DataFrame(
+        {"patient_id": [1, 1, 2, 2, 3, 3, 1], "strat_fold": [1, 2, 2, 2, 3, 3, 1]}
+    )
     with pytest.raises(RuntimeError):
         make_split(manifest, SplitConfig(test_folds=(1,), val_folds=(2,), run=0))
 

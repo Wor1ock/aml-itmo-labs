@@ -40,7 +40,8 @@ def class_distribution(manifest: pd.DataFrame, superclasses: Sequence[str], path
     axes[0].set_ylabel("доля")
     axes[0].tick_params(axis="x", rotation=20)
     rhythm = manifest["rhythm_code"].value_counts()
-    axes[1].bar(rhythm.index.astype(str), rhythm.to_numpy(), color="#4a4a4a")
+    rhythm_labels = [str(name) for name in rhythm.index]
+    axes[1].bar(rhythm_labels, rhythm.to_numpy(), color="#4a4a4a")
     axes[1].set_title("распределение класса ритма")
     axes[1].tick_params(axis="x", rotation=45)
     return save(fig, path)

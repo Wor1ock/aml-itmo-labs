@@ -6,6 +6,8 @@ macro-F1 and accuracy for single-label rhythm, MAE/RMSE/R2 for age regression.
 
 from __future__ import annotations
 
+from typing import Any
+
 import numpy as np
 import torch
 from sklearn.metrics import (
@@ -19,10 +21,16 @@ from sklearn.metrics import (
     roc_auc_score,
 )
 
+from .schema import DatasetMeta
 
-def diag_metrics(y_true: np.ndarray, y_score: np.ndarray, names: list[str]) -> dict[str, object]:
-    """y_true: (N, C) binary, y_score: (N, C) probabilities."""
-    out: dict[str, object] = {}
+
+def diag_metrics(y_true: np.ndarray, y_score: np.ndarray, names: list[str]) -> dict[str, Any]:
+    """y_true: (N, C) binary, y_score: (N, C) probabilities.
+
+    Macro-F1 averages only over classes present in y_true: a class with no positive record
+    in the test fold would otherwise contribute a hard zero and hide the real quality.
+    """
+    out: dict[str, Any] = {}
     aucs: list[float] = []
     for i, name in enumerate(names):
         if y_true[:, i].min() == y_true[:, i].max():
@@ -33,9 +41,14 @@ def diag_metrics(y_true: np.ndarray, y_score: np.ndarray, names: list[str]) -> d
         out[f"ap_{name}"] = float(average_precision_score(y_true[:, i], y_score[:, i]))
     out["macro_auc"] = float(np.mean(aucs)) if aucs else float("nan")
     y_pred = (y_score >= 0.5).astype(int)
-    out["macro_f1"] = float(f1_score(y_true, y_pred, average="macro", zero_division=0))
+    present = np.flatnonzero(y_true.sum(axis=0) > 0)
+    out["macro_f1"] = (
+        float(f1_score(y_true[:, present], y_pred[:, present], average="macro", zero_division=0))
+        if present.size
+        else float("nan")
+    )
     precision, recall, f1, support = precision_recall_fscore_support(
-        y_true, y_pred, average=None, zero_division=0
+        y_true, y_pred, average=None, zero_division=0, labels=np.arange(len(names))
     )
     for i, name in enumerate(names):
         out[f"f1_{name}"] = float(f1[i])
@@ -45,7 +58,7 @@ def diag_metrics(y_true: np.ndarray, y_score: np.ndarray, names: list[str]) -> d
     return out
 
 
-def rhythm_metrics(y_true: np.ndarray, y_score: np.ndarray, names: list[str]) -> dict[str, object]:
+def rhythm_metrics(y_true: np.ndarray, y_score: np.ndarray, names: list[str]) -> dict[str, Any]:
     """y_true: (N,) int, y_score: (N, K) probabilities."""
     out: dict[str, object] = {}
     y_pred = y_score.argmax(axis=1)
@@ -64,8 +77,8 @@ def rhythm_metrics(y_true: np.ndarray, y_score: np.ndarray, names: list[str]) ->
     return out
 
 
-def age_metrics(y_true: np.ndarray, y_pred: np.ndarray) -> dict[str, object]:
-    out: dict[str, object] = {"n": int(len(y_true))}
+def age_metrics(y_true: np.ndarray, y_pred: np.ndarray) -> dict[str, Any]:
+    out: dict[str, Any] = {"n": int(len(y_true))}
     if len(y_true) < 2:
         return out
     out["mae"] = float(mean_absolute_error(y_true, y_pred))
@@ -77,13 +90,13 @@ def age_metrics(y_true: np.ndarray, y_pred: np.ndarray) -> dict[str, object]:
 
 def task_metrics(
     pred: dict[str, np.ndarray],
-    meta: dict[str, object],
-) -> dict[str, object]:
+    meta: DatasetMeta,
+) -> dict[str, Any]:
     """Metrics for all tasks from one prediction bundle."""
-    names = list(meta["superclasses"])  # type: ignore[arg-type]
-    rhythm_names = list(meta["rhythm_classes"])  # type: ignore[arg-type]
+    names = list(meta["superclasses"])
+    rhythm_names = list(meta["rhythm_classes"])
     mask = pred["mask"]
-    out: dict[str, object] = {}
+    out: dict[str, Any] = {}
     diag_rows = mask[:, 0]
     if diag_rows.any():
         out["diag"] = diag_metrics(pred["diag_true"][diag_rows], pred["diag_score"][diag_rows], names)

@@ -16,7 +16,6 @@ import pandas as pd
 
 from ..config import DataConfig
 from ..logging_utils import get_logger
-
 SUPERCLASSES: tuple[str, ...] = ("NORM", "MI", "STTC", "CD", "HYP")
 
 
@@ -97,21 +96,27 @@ def build_labels(db: pd.DataFrame, statements: pd.DataFrame, cfg: DataConfig) ->
         cfg.rhythm_topk,
     )
 
+    ecg_ids = db["ecg_id"].astype(int).tolist()
+    patient_ids = db["patient_id"].astype(int).tolist()
+    folds = db["strat_fold"].astype(int).tolist()
+    ages = db["age"].astype(float).tolist()
+    sexes = db["sex"].astype(int).tolist()
+    filenames = db["filename_lr"].astype(str).tolist()
+
     rows = []
     for i, codes in enumerate(per_record):
         target = diag_target(codes, statements)
-        source = db.iloc[i]
-        age = float(source["age"]) if pd.notna(source["age"]) else float("nan")
+        age = float(ages[i]) if np.isfinite(ages[i]) else float("nan")
         if not cfg.min_age <= age <= cfg.max_age:
             age = float("nan")
         record = {
-            "ecg_id": int(source["ecg_id"]),
-            "patient_id": int(source["patient_id"]),
-            "strat_fold": int(source["strat_fold"]),
+            "ecg_id": int(ecg_ids[i]),
+            "patient_id": int(patient_ids[i]),
+            "strat_fold": int(folds[i]),
             "age": age,
-            "sex": int(source["sex"]),
+            "sex": int(sexes[i]),
             "rhythm_idx": rhythm_target(codes, order),
-            "filename": str(source["filename_lr"]),
+            "filename": filenames[i],
             "n_diag_positive": int(target.sum()),
         }
         for j, name in enumerate(SUPERCLASSES):

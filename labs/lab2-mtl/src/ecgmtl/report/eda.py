@@ -21,12 +21,13 @@ def _shortcut_audit(cfg: Config, manifest: pd.DataFrame) -> pd.DataFrame:
     if not raw.exists():
         return pd.DataFrame()
     db = pd.read_csv(raw)
-    target = db["scp_codes"].astype(str).str.contains("NORM").astype(int).to_numpy()
+    codes = [str(value) for value in db["scp_codes"]]
+    target = np.array([1 if "NORM" in value else 0 for value in codes])
     rows = []
     for column in ("site", "nurse", "device", "validated_by_human", "heart_axis"):
         if column not in db.columns:
             continue
-        values = db[column].fillna("na").astype(str).to_numpy()
+        values = np.array([str(value) for value in db[column]])
         rows.append(
             {
                 "колонка": column,

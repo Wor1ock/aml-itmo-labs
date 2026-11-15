@@ -5,7 +5,7 @@ description = "Multi-task ECG analysis on PTB-XL: diagnosis, rhythm, age"
 requires-python = ">=3.11"
 dependencies = [
     "torch>=2.5,<2.6",
-    "numpy>=1.26",
+    "numpy>=2.0",
     "pandas>=2.2",
     "pyarrow>=16.0",
     "scikit-learn>=1.4",

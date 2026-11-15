@@ -267,7 +267,7 @@ def run_training(cfg: Config, run_dir: Path) -> dict[str, Any]:
     val_loader = make_loader(val_ds, cfg.train.batch_size * 2, False, cfg.train.num_workers, cfg.train.seed)
     test_loader = make_loader(test_ds, cfg.train.batch_size * 2, False, cfg.train.num_workers, cfg.train.seed)
 
-    n_rhythm = len(meta["rhythm_classes"])  # type: ignore[arg-type]
+    n_rhythm = len(meta["rhythm_classes"])
     model = build_model(cfg.model, cfg.data, len(SUPERCLASSES), n_rhythm, cfg.loss.tasks).to(device)
     log.info("parameters: %s", model.count_parameters())
     pos_weight = pos_weight_tensor(manifest, np.sort(train_idx), cfg.loss.diag_pos_weight)

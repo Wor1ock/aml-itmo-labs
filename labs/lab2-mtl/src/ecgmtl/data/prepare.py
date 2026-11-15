@@ -10,6 +10,7 @@ from __future__ import annotations
 import gc
 import json
 from pathlib import Path
+from typing import cast
 
 import numpy as np
 import pandas as pd
@@ -17,6 +18,7 @@ import wfdb
 
 from ..config import DataConfig
 from ..logging_utils import get_logger
+from ..schema import DatasetMeta
 from .download import ensure_raw
 from .labels import SUPERCLASSES, build_labels, load_statements
 
@@ -65,9 +67,10 @@ def prepare(cfg: DataConfig) -> Path:
         shape=(len(labels), cfg.n_leads, cfg.signal_len),
     )
 
-    kept = []
-    for i, row in enumerate(labels.itertuples(index=False)):
-        signal = _read_signal(raw / row.filename, cfg)
+    kept: list[int] = []
+    filenames = labels["filename"].astype(str).tolist()
+    for i, filename in enumerate(filenames):
+        signal = _read_signal(raw / filename, cfg)
         if signal is None:
             continue
         signals[len(kept)] = signal.astype(np.float16)
@@ -107,10 +110,10 @@ def prepare(cfg: DataConfig) -> Path:
     return out
 
 
-def load_processed(cfg: DataConfig) -> tuple[pd.DataFrame, np.ndarray, dict[str, object]]:
+def load_processed(cfg: DataConfig) -> tuple[pd.DataFrame, np.ndarray, DatasetMeta]:
     """Load manifest, memmap and metadata written by :func:`prepare`."""
     root = cfg.root / "processed"
     manifest = pd.read_parquet(root / MANIFEST_NAME)
     signals = np.load(root / SIGNALS_NAME, mmap_mode="r")
-    meta = json.loads((root / META_NAME).read_text(encoding="utf-8"))
+    meta = cast(DatasetMeta, json.loads((root / META_NAME).read_text(encoding="utf-8")))
     return manifest, signals, meta
