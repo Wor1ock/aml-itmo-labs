@@ -1,0 +1,17 @@
+# data and artifacts are never committed
+data/
+cache/
+outputs/
+report/*.html
+report/figures/
+
+# python
+__pycache__/
+*.py[oc]
+.venv/
+.mypy_cache/
+.pytest_cache/
+*.egg-info/
+
+# local
+*.log
