@@ -7,6 +7,7 @@ the split leak-free.
 
 from __future__ import annotations
 
+import gc
 import json
 from pathlib import Path
 
@@ -76,9 +77,11 @@ def prepare(cfg: DataConfig) -> Path:
 
     signals.flush()
     del signals
+    gc.collect()
     full = np.load(tmp_signals, mmap_mode="r")
     np.save(out / SIGNALS_NAME, np.asarray(full[: len(kept)]), allow_pickle=False)
     del full
+    gc.collect()
     tmp_signals.unlink()
 
     manifest = labels.iloc[kept].reset_index(drop=True)
