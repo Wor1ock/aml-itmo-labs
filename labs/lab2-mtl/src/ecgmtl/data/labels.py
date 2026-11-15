@@ -96,12 +96,12 @@ def build_labels(db: pd.DataFrame, statements: pd.DataFrame, cfg: DataConfig) ->
         cfg.rhythm_topk,
     )
 
-    ecg_ids: list[int] = [int(value) for value in db["ecg_id"]]
-    patient_ids: list[int] = [int(value) for value in db["patient_id"]]
-    folds: list[int] = [int(value) for value in db["strat_fold"]]
-    ages: list[float] = [float(value) for value in db["age"]]
-    sexes: list[int] = [int(value) for value in db["sex"]]
-    filenames: list[str] = [str(value) for value in db["filename_lr"]]
+    ecg_ids: list[int] = [int(value) for value in db["ecg_id"].to_numpy()]
+    patient_ids: list[int] = [int(value) for value in db["patient_id"].to_numpy()]
+    folds: list[int] = [int(value) for value in db["strat_fold"].to_numpy()]
+    ages: list[float] = [float(value) for value in db["age"].to_numpy(dtype=float)]
+    sexes: list[int] = [int(value) for value in db["sex"].to_numpy()]
+    filenames: list[str] = [str(value) for value in db["filename_lr"].to_numpy()]
 
     rows = []
     for i, codes in enumerate(per_record):
