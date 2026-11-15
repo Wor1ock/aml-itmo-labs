@@ -2,10 +2,10 @@
 name = "ecgmtl"
 version = "0.1.0"
 description = "Multi-task ECG analysis on PTB-XL: diagnosis, rhythm, age"
-requires-python = ">=3.12"
+requires-python = ">=3.11"
 dependencies = [
-    "torch>=2.4",
-    "numpy>=1.26",
+    "torch>=2.4,<2.5",
+    "numpy<2",
     "pandas>=2.2",
     "pyarrow>=16.0",
     "scikit-learn>=1.4",
@@ -27,6 +27,16 @@ packages = ["src/ecgmtl"]
 
 [dependency-groups]
 dev = ["mypy>=1.10", "pytest>=8.0", "types-PyYAML>=6.0", "pandas-stubs>=2.2"]
+
+# The CUDA 11.8 build bundles the CUDA libraries inside the torch wheel (one 858 MB wheel
+# instead of a dozen nvidia-* packages) and runs on any driver >= 520, including 12.x.
+[tool.uv.sources]
+torch = { index = "pytorch-cu118" }
+
+[[tool.uv.index]]
+name = "pytorch-cu118"
+url = "https://download.pytorch.org/whl/cu118"
+explicit = true
 
 [tool.mypy]
 files = ["src/ecgmtl"]
